@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>dio.stesso</title>
+<meta name="description" content="Systems. Patterns. Ideas. The work behind the screen.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Syne:wght@700;800&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void: #070707;
+  --gold: #c4893f;
+  --gold-light: #e0aa60;
+  --gold-dim: rgba(196,137,63,0.6);
+  --cream: #ede6d8;
+  --muted: rgba(237,230,216,0.68);
+  --ghost: rgba(237,230,216,0.08);
+  --ghost2: rgba(237,230,216,0.22);
+  --fd: 'Syne', sans-serif;
+  --fb: 'Cormorant Garamond', serif;
+  --fm: 'JetBrains Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--void);
+  color: var(--cream);
+  font-family: var(--fb);
+  font-size: clamp(1rem, 2.4vw, 1.15rem);
+  font-weight: 300;
+  line-height: 1.75;
+  overflow-x: hidden;
+}
+::selection { background: rgba(196,137,63,0.2); }
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: var(--void); }
+::-webkit-scrollbar-thumb { background: var(--gold-dim); }
+
+/* CURSOR — desktop only */
+@media (pointer: fine) {
+  body { cursor: none; }
+  #cur, #cur2 {
+    position: fixed; border-radius: 50%;
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%,-50%);
+  }
+  #cur { width: 7px; height: 7px; background: var(--gold); mix-blend-mode: screen; }
+  #cur2 { width: 32px; height: 32px; border: 1px solid rgba(196,137,63,0.6); transition: width .25s, height .25s, border-color .25s; }
+}
+
+/* CANVAS */
+#cv { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.4; }
+
+/* LAYOUT */
+.wrap { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 80px); }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 20px clamp(20px, 5vw, 80px);
+  display: flex; justify-content: space-between; align-items: center;
+  background: linear-gradient(to bottom, rgba(7,7,7,0.92) 60%, transparent);
+}
+.nav-logo {
+  font-family: var(--fd); font-size: .78rem; font-weight: 800;
+  letter-spacing: .2em; color: var(--gold); text-decoration: none;
+  opacity: 0; animation: fu .8s .1s ease forwards;
+}
+.nav-links { display: flex; gap: 28px; list-style: none; opacity: 0; animation: fu .8s .2s ease forwards; }
+.nav-links a {
+  font-family: var(--fm); font-size: .55rem; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--muted); text-decoration: none;
+  transition: color .25s;
+}
+.nav-links a:hover { color: var(--gold-light); }
+@media (max-width: 640px) { .nav-links { display: none; } }
+
+/* HERO */
+.hero {
+  min-height: 100svh;
+  display: grid; grid-template-columns: 1fr 1fr;
+  align-items: center; gap: clamp(32px, 5vw, 64px);
+  padding: clamp(90px, 14vh, 130px) 0 clamp(40px, 6vh, 70px);
+}
+@media (max-width: 700px) {
+  .hero { grid-template-columns: 1fr; padding-top: 110px; gap: 28px; }
+  .hero-visual { order: -1; }
+}
+.hero-eye {
+  font-family: var(--fm); font-size: .55rem; letter-spacing: .3em;
+  text-transform: uppercase; color: var(--gold);
+  display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+  opacity: 0; animation: fu .8s .4s ease forwards;
+}
+.hero-eye::before { content: ''; width: 28px; height: 1px; background: var(--gold); }
+.hero-name {
+  font-family: var(--fd); font-weight: 800; letter-spacing: -.03em;
+  font-size: clamp(3.2rem, 9vw, 7.5rem); line-height: .92;
+  margin-bottom: 24px;
+  opacity: 0; animation: fu 1s .55s cubic-bezier(.16,1,.3,1) forwards;
+}
+.hero-name .stroke {
+  display: block; color: transparent;
+  -webkit-text-stroke: 1px rgba(237,230,216,0.22);
+}
+.hero-name .dot { color: var(--gold); }
+.hero-tag {
+  font-size: clamp(.95rem, 1.8vw, 1.1rem); font-style: italic;
+  color: var(--muted); max-width: 360px; line-height: 1.55;
+  opacity: 0; animation: fu .8s .8s ease forwards;
+}
+.hero-visual {
+  display: flex; justify-content: center; align-items: center;
+  opacity: 0; animation: fi 1.2s .6s ease forwards;
+}
+.hero-img-wrap { position: relative; width: 100%; max-width: 460px; }
+.hero-img-wrap::before {
+  content: ''; position: absolute; inset: -30px;
+  background: radial-gradient(ellipse at center, rgba(196,137,63,0.1) 0%, transparent 68%);
+  animation: breathe 5s ease-in-out infinite;
+}
+.hero-img-wrap img { width: 100%; display: block; position: relative; z-index: 1; filter: brightness(.88) contrast(1.05); }
+
+/* SCROLL HINT */
+.scroll-hint {
+  position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  font-family: var(--fm); font-size: .5rem; letter-spacing: .3em;
+  text-transform: uppercase; color: rgba(196,137,63,0.6);
+  opacity: 0; animation: fi 1s 1.6s ease forwards;
+}
+.scroll-line { width: 1px; height: 44px; background: linear-gradient(to bottom, rgba(196,137,63,0.6), transparent); animation: sp 2s ease-in-out infinite; }
+
+/* MARQUEE */
+.mq { overflow: hidden; border-top: 1px solid var(--ghost); border-bottom: 1px solid var(--ghost); padding: 14px 0; position: relative; z-index: 2; }
+.mq-track { display: flex; gap: 48px; animation: mq 28s linear infinite; width: max-content; white-space: nowrap; }
+.mq-item { font-family: var(--fd); font-size: .62rem; font-weight: 700; letter-spacing: .35em; text-transform: uppercase; color: var(--ghost2); display: flex; align-items: center; gap: 48px; flex-shrink: 0; }
+.mq-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--gold-dim); flex-shrink: 0; }
+
+/* SECTIONS */
+.sec { padding: clamp(60px, 10vw, 110px) 0; }
+.sec-sm { padding: clamp(40px, 7vw, 80px) 0; }
+
+.lbl {
+  font-family: var(--fm); font-size: .55rem; letter-spacing: .28em;
+  text-transform: uppercase; color: var(--gold);
+  display: flex; align-items: center; gap: 12px; margin-bottom: 28px;
+}
+.lbl::before { content: ''; width: 20px; height: 1px; background: var(--gold); }
+
+/* ABOUT */
+.about-grid { display: grid; grid-template-columns: 1fr 1.6fr; gap: clamp(40px, 6vw, 80px); align-items: start; }
+@media (max-width: 700px) { .about-grid { grid-template-columns: 1fr; } }
+.about-imgs { display: flex; flex-direction: column; gap: 10px; }
+@media (max-width: 700px) { .about-imgs { display: grid; grid-template-columns: 1fr 1fr; } }
+.about-imgs img { width: 100%; display: block; filter: brightness(.65) sepia(.15); transition: filter .5s; border-radius: 1px; }
+.about-imgs img:hover { filter: brightness(.85) sepia(.05); }
+
+.pull {
+  font-family: var(--fb); font-size: clamp(1.4rem, 3vw, 2.4rem);
+  font-weight: 300; font-style: italic; line-height: 1.3; color: var(--cream);
+  margin-bottom: 28px; border-left: 1px solid var(--gold-dim); padding-left: 20px;
+}
+.body-p { font-size: clamp(1rem, 1.5vw, 1.12rem); color: var(--muted); line-height: 1.8; margin-bottom: 20px; }
+.body-p b { color: var(--cream); font-weight: 400; }
+
+/* IMAGE BREAK */
+.img-break {
+  width: 100vw; margin-left: calc(-50vw + 50%);
+  height: clamp(280px, 45vw, 520px); overflow: hidden; position: relative; z-index: 2;
+}
+.img-break img {
+  width: 100%; height: 100%; object-fit: cover; object-position: center 25%;
+  filter: brightness(.42) sepia(.18);
+  transform: scale(1.06); will-change: transform;
+}
+.img-break-ov { position: absolute; inset: 0; background: linear-gradient(to bottom, var(--void) 0%, transparent 18%, transparent 78%, var(--void) 100%); }
+.img-break-q {
+  position: absolute; bottom: 36px;
+  left: clamp(20px, 5vw, 80px); right: clamp(20px, 5vw, 80px);
+  font-family: var(--fd); font-size: clamp(1.2rem, 3.5vw, 3rem);
+  font-weight: 800; letter-spacing: -.02em; line-height: 1.1; color: var(--cream); max-width: 700px;
+}
+.img-break-q span { color: var(--gold); }
+
+/* SYSTEMS */
+.sys-head { display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; align-items: end; margin-bottom: 40px; }
+@media (max-width: 700px) { .sys-head { grid-template-columns: 1fr; gap: 16px; } }
+.big-title { font-family: var(--fd); font-weight: 800; letter-spacing: -.03em; font-size: clamp(2.2rem, 5.5vw, 5.5rem); line-height: 1; }
+.big-title .ac { color: var(--gold); }
+.sys-desc { font-size: clamp(.9rem, 1.3vw, 1rem); font-style: italic; color: var(--muted); line-height: 1.65; }
+.sys-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--ghost); border: 1px solid var(--ghost); }
+@media (max-width: 700px) { .sys-row { grid-template-columns: repeat(2, 1fr); } }
+.sys-card { background: var(--void); padding: 24px 18px; position: relative; overflow: hidden; transition: background .35s; }
+.sys-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1.5px; background: var(--gold); transform: scaleX(0); transform-origin: left; transition: transform .35s; }
+.sys-card:hover { background: rgba(196,137,63,0.04); }
+.sys-card:hover::after { transform: scaleX(1); }
+.sys-idx { font-family: var(--fm); font-size: .5rem; letter-spacing: .15em; color: rgba(196,137,63,0.55); margin-bottom: 16px; }
+.sys-nm { font-family: var(--fd); font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--cream); }
+
+/* PRINCIPLES */
+.prin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(40px, 6vw, 80px); align-items: center; }
+@media (max-width: 700px) { .prin-grid { grid-template-columns: 1fr; } .prin-img { display: none; } }
+.prin-img img { width: 100%; filter: brightness(.7) sepia(.1); border-radius: 1px; }
+.prin-list { list-style: none; margin-top: 24px; }
+.prin-item { display: flex; gap: 16px; align-items: baseline; padding: 16px 0; border-bottom: 1px solid var(--ghost); transition: border-color .25s; }
+.prin-item:hover { border-color: var(--gold-dim); }
+.prin-n { font-family: var(--fm); font-size: .5rem; letter-spacing: .1em; color: var(--gold); flex-shrink: 0; }
+.prin-t { font-size: clamp(.95rem, 1.4vw, 1.1rem); color: var(--muted); line-height: 1.5; }
+.prin-t b { color: var(--cream); font-weight: 400; }
+
+/* WANDERING */
+.wander-mega { font-family: var(--fd); font-weight: 800; font-size: clamp(2.8rem, 10vw, 8rem); letter-spacing: -.04em; line-height: .9; color: transparent; -webkit-text-stroke: 1px rgba(237,230,216,0.1); margin-bottom: 36px; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0; }
+.tag { font-family: var(--fm); font-size: .55rem; letter-spacing: .18em; text-transform: uppercase; color: rgba(196,137,63,0.6); border: 1px solid rgba(196,137,63,0.35); padding: 7px 14px; transition: color .25s, border-color .25s; }
+.tag:hover { color: var(--gold-light); border-color: rgba(196,137,63,0.55); }
+
+/* CONTACT */
+.contact-rule { width: 100%; height: 1px; background: linear-gradient(to right, transparent, var(--gold-dim), transparent); margin-bottom: clamp(50px, 8vw, 90px); }
+.contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(40px, 7vw, 80px); }
+@media (max-width: 700px) { .contact-grid { grid-template-columns: 1fr; } }
+.contact-title { font-family: var(--fd); font-weight: 800; letter-spacing: -.025em; font-size: clamp(2rem, 4.5vw, 4.5rem); line-height: 1; margin: 16px 0 20px; }
+.contact-title .ac { color: var(--gold); }
+.contact-sub { font-size: clamp(.95rem, 1.3vw, 1.05rem); font-style: italic; color: var(--muted); line-height: 1.65; max-width: 340px; }
+.clinks { display: flex; flex-direction: column; }
+.clink { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--ghost); text-decoration: none; position: relative; overflow: hidden; transition: border-color .25s; }
+.clink::before { content: ''; position: absolute; inset: 0; background: rgba(196,137,63,0.03); transform: translateX(-100%); transition: transform .35s ease; }
+.clink:hover { border-color: var(--gold-dim); }
+.clink:hover::before { transform: translateX(0); }
+.clink-lbl { font-family: var(--fm); font-size: .5rem; letter-spacing: .2em; text-transform: uppercase; color: rgba(196,137,63,0.6); margin-bottom: 4px; }
+.clink-val { font-family: var(--fd); font-size: clamp(.85rem, 1.4vw, .95rem); font-weight: 700; color: var(--cream); transition: color .25s; }
+.clink:hover .clink-val { color: var(--gold-light); }
+.clink-arr { font-size: 1rem; color: rgba(196,137,63,0.55); transition: transform .25s, color .25s; }
+.clink:hover .clink-arr { transform: translate(3px,-3px); color: var(--gold-light); }
+
+/* FOOTER */
+footer { border-top: 1px solid var(--ghost); padding: 28px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; position: relative; z-index: 2; }
+.ft-logo { font-family: var(--fd); font-size: .75rem; font-weight: 800; letter-spacing: .18em; color: var(--gold); }
+.ft-copy { font-family: var(--fm); font-size: .5rem; letter-spacing: .12em; color: rgba(237,230,216,0.42); }
+
+/* REVEAL */
+.rv { opacity: 0; transform: translateY(22px); transition: opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1); }
+.rv.on { opacity: 1; transform: translateY(0); }
+.d1 { transition-delay: .08s; } .d2 { transition-delay: .16s; } .d3 { transition-delay: .24s; } .d4 { transition-delay: .32s; } .d5 { transition-delay: .4s; }
+
+/* KEYFRAMES */
+@keyframes fu { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fi { from { opacity:0; } to { opacity:1; } }
+@keyframes breathe { 0%,100% { opacity:.7; transform:scale(1); } 50% { opacity:1; transform:scale(1.04); } }
+@keyframes sp { 0%,100% { opacity:.4; transform:scaleY(1); } 50% { opacity:.9; transform:scaleY(.65); } }
+@keyframes mq { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur2"></div>
+<canvas id="cv"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">dio.stesso</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#systems">Obsessions</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="wrap" style="position:relative;">
+  <section class="hero">
+    <div class="hero-text">
+      <div class="hero-eye">internet-real · reality-vague</div>
+      <h1 class="hero-name">dio<span class="dot">.</span><span class="stroke">stesso</span></h1>
+      <p class="hero-tag">There are people who introduce themselves with a job title.<br>I prefer unfinished sentences.</p>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-img-wrap">
+        <img src="scene-monolith.png" alt="dio.stesso" loading="eager">
+      </div>
+    </div>
+  </section>
+  <div class="scroll-hint"><div class="scroll-line"></div><span>scroll</span></div>
+</div>
+
+<!-- MARQUEE -->
+<div class="mq">
+  <div class="mq-track">
+    <div class="mq-item">obsessions<span class="mq-dot"></span>patterns<span class="mq-dot"></span>curiosity<span class="mq-dot"></span>code<span class="mq-dot"></span>philosophy<span class="mq-dot"></span>economics<span class="mq-dot"></span>emergence<span class="mq-dot"></span>design<span class="mq-dot"></span>chaos<span class="mq-dot"></span>simplicity</div>
+    <div class="mq-item">obsessions<span class="mq-dot"></span>patterns<span class="mq-dot"></span>curiosity<span class="mq-dot"></span>code<span class="mq-dot"></span>philosophy<span class="mq-dot"></span>economics<span class="mq-dot"></span>emergence<span class="mq-dot"></span>design<span class="mq-dot"></span>chaos<span class="mq-dot"></span>simplicity</div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<div class="wrap">
+  <section class="sec" id="about">
+    <div class="about-grid">
+      <div>
+        <div class="lbl rv">About</div>
+        <div class="about-imgs rv d1">
+          <img src="scene-desk.png" alt="Working" loading="lazy">
+          <img src="scene-writing.png" alt="Thinking" loading="lazy">
+        </div>
+      </div>
+      <div>
+        <p class="pull rv">The name is real enough for the internet and vague enough for reality.</p>
+        <p class="body-p rv d1">I spend a significant amount of time <b>teaching machines to follow instructions</b>, convincing computers to cooperate, and occasionally discovering that the bug was me all along.</p>
+        <p class="body-p rv d2">I'm interested in technology because <b>it changes how humans think, build, and communicate</b> — not because it's shiny. I enjoy good ideas regardless of source. A research paper. A late-night conversation. A joke that accidentally contains a profound truth.</p>
+        <p class="body-p rv d3" style="font-style:italic;color:rgba(237,230,216,0.55);">The internet encourages certainty. Reality rarely rewards it.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- BREAK 1 -->
+<div class="img-break">
+  <img src="scene-cliff.png" alt="" loading="lazy" id="pb1">
+  <div class="img-break-ov"></div>
+  <div class="img-break-q">If something appears chaotic, there's usually a <span>pattern</span> hiding underneath.</div>
+</div>
+
+<!-- SYSTEMS -->
+<div class="wrap">
+  <section class="sec" id="systems">
+    <div class="sys-head">
+      <div>
+        <div class="lbl rv">What I obsess over</div>
+        <h2 class="big-title rv d1">I like<br><span class="ac">obsessions.</span></h2>
+      </div>
+      <p class="sys-desc rv d2">Technical. Social. Economic. Natural. Fictional worlds with surprisingly consistent internal logic. Finding the pattern — that's the obsession.</p>
+    </div>
+    <div class="sys-row rv d3">
+      <div class="sys-card"><div class="sys-idx">01</div><div class="sys-nm">Technical</div></div>
+      <div class="sys-card"><div class="sys-idx">02</div><div class="sys-nm">Social</div></div>
+      <div class="sys-card"><div class="sys-idx">03</div><div class="sys-nm">Economic</div></div>
+      <div class="sys-card"><div class="sys-idx">04</div><div class="sys-nm">Natural</div></div>
+      <div class="sys-card"><div class="sys-idx">05</div><div class="sys-nm">Fictional</div></div>
+    </div>
+  </section>
+</div>
+
+<!-- BREAK 2 -->
+<div class="img-break">
+  <img src="scene-writing.png" alt="" loading="lazy" id="pb2">
+  <div class="img-break-ov"></div>
+  <div class="img-break-q">Work in public.<br><span>Think</span> in private.</div>
+</div>
+
+<!-- PRINCIPLES -->
+<div class="wrap">
+  <section class="sec">
+    <div class="prin-grid">
+      <div class="prin-img rv">
+        <img src="scene-cliff.png" alt="" loading="lazy">
+      </div>
+      <div>
+        <div class="lbl rv">How I operate</div>
+        <h2 class="big-title rv d1" style="font-size:clamp(1.8rem,4vw,3.8rem);">A few<br>principles.</h2>
+        <ul class="prin-list">
+          <li class="prin-item rv d1"><span class="prin-n">01</span><span class="prin-t"><b>Strong opinions</b>, lightly held.</span></li>
+          <li class="prin-item rv d2"><span class="prin-n">02</span><span class="prin-t"><b>Curiosity</b> over ideology.</span></li>
+          <li class="prin-item rv d3"><span class="prin-n">03</span><span class="prin-t"><b>Building</b> over complaining.</span></li>
+          <li class="prin-item rv d4"><span class="prin-n">04</span><span class="prin-t"><b>Evidence</b> over noise.</span></li>
+          <li class="prin-item rv d5"><span class="prin-n">05</span><span class="prin-t"><b>Humor</b> over self-importance.</span></li>
+        </ul>
+        <p class="body-p rv" style="margin-top:24px;font-style:italic;">Especially the last one. Life becomes significantly easier when you accept that every human is capable of confidently explaining something they misunderstood five minutes earlier. Including me.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- WANDERING -->
+<div class="wrap">
+  <section class="sec-sm">
+    <div class="wander-mega rv">Wander&shy;ing</div>
+    <div style="max-width:600px;margin-left:auto;">
+      <p class="body-p rv">Curiosity creates strange combinations. You'll find me wandering between disciplines — following whatever rabbit hole won this week's internal election.</p>
+      <div class="tags rv d1">
+        <span class="tag">Software Engineering</span>
+        <span class="tag">Artificial Intelligence</span>
+        <span class="tag">Economics</span>
+        <span class="tag">Science</span>
+        <span class="tag">Philosophy</span>
+        <span class="tag">History</span>
+        <span class="tag">Design</span>
+        <span class="tag">Behavior</span>
+        <span class="tag">Emergence</span>
+      </div>
+      <p class="body-p rv d2" style="font-style:italic;color:rgba(237,230,216,0.55);">Not everything here is a conclusion. Some things are questions disguised as essays. Some are essays disguised as jokes.</p>
+    </div>
+  </section>
+</div>
+
+<!-- CONTACT -->
+<div class="wrap">
+  <section class="sec-sm" id="contact">
+    <div class="contact-rule"></div>
+    <div class="contact-grid">
+      <div>
+        <div class="lbl rv">Reach me</div>
+        <h2 class="contact-title rv d1">Interesting<br>problems<br><span class="ac">welcome.</span></h2>
+        <p class="contact-sub rv d2">If you have a strange idea, a useful correction, or a question that doesn't fit neatly into a category — the best conversations usually start that way.</p>
+      </div>
+      <div class="clinks rv d2">
+        <a href="mailto:code.dio.stesso@gmail.com" class="clink">
+          <div><div class="clink-lbl">Email</div><div class="clink-val">code.dio.stesso@gmail.com</div></div>
+          <span class="clink-arr">↗</span>
+        </a>
+        <a href="https://github.com/Meeseeks-Mr" target="_blank" rel="noopener" class="clink">
+          <div><div class="clink-lbl">GitHub</div><div class="clink-val">Meeseeks-Mr</div></div>
+          <span class="clink-arr">↗</span>
+        </a>
+        <a href="https://x.com/WiseBakasur" target="_blank" rel="noopener" class="clink">
+          <div><div class="clink-lbl">X (Twitter)</div><div class="clink-val">@WiseBakasur</div></div>
+          <span class="clink-arr">↗</span>
+        </a>
+      </div>
+    </div>
+  </section>
+  <footer>
+    <div class="ft-logo">dio.stesso</div>
+    <div class="ft-copy">The identity is unimportant. The work is doing the talking.</div>
+  </footer>
+</div>
+
+<script>
+/* CURSOR */
+const cur = document.getElementById('cur');
+const cur2 = document.getElementById('cur2');
+let mx=0,my=0,rx=0,ry=0;
+const isFine = window.matchMedia('(pointer: fine)').matches;
+if(isFine){
+  document.addEventListener('mousemove',e=>{
+    mx=e.clientX; my=e.clientY;
+    cur.style.left=mx+'px'; cur.style.top=my+'px';
+  });
+  (function animR(){
+    rx+=(mx-rx)*.1; ry+=(my-ry)*.1;
+    cur2.style.left=rx+'px'; cur2.style.top=ry+'px';
+    requestAnimationFrame(animR);
+  })();
+}
+
+/* PARTICLES */
+const cv=document.getElementById('cv');
+const ctx=cv.getContext('2d');
+let W,H,pts=[];
+function resize(){ W=cv.width=window.innerWidth; H=cv.height=window.innerHeight; }
+resize(); window.addEventListener('resize',resize);
+let pmx=.5,pmy=.5;
+document.addEventListener('mousemove',e=>{ pmx=e.clientX/W; pmy=e.clientY/H; });
+class P{
+  constructor(){this.reset();}
+  reset(){
+    this.x=Math.random()*W; this.y=Math.random()*H;
+    this.r=Math.random()*.9+.2;
+    this.vx=(Math.random()-.5)*.2; this.vy=(Math.random()-.5)*.15-.04;
+    this.life=0; this.max=Math.random()*350+180;
+    this.gold=Math.random()>.55;
+  }
+  tick(){
+    this.life++;
+    this.x+=this.vx+(pmx-.5)*.06;
+    this.y+=this.vy+(pmy-.5)*.03;
+    if(this.life>this.max||this.x<0||this.x>W||this.y<0||this.y>H){this.reset();}
+  }
+  draw(){
+    const a=Math.sin((this.life/this.max)*Math.PI)*(this.gold?.5:.18);
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+    ctx.fillStyle=this.gold?`rgba(196,137,63,${a})`:`rgba(237,230,216,${a})`;
+    ctx.fill();
+  }
+}
+for(let i=0;i<90;i++){ const p=new P(); p.life=Math.random()*p.max; pts.push(p); }
+function drawLines(){
+  for(let i=0;i<pts.length;i++){
+    for(let j=i+1;j<pts.length;j++){
+      const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d<70){ ctx.beginPath(); ctx.moveTo(pts[i].x,pts[i].y); ctx.lineTo(pts[j].x,pts[j].y); ctx.strokeStyle=`rgba(196,137,63,${(1-d/70)*.05})`; ctx.lineWidth=.4; ctx.stroke(); }
+    }
+  }
+}
+(function anim(){ ctx.clearRect(0,0,W,H); pts.forEach(p=>{p.tick();p.draw();}); drawLines(); requestAnimationFrame(anim); })();
+
+/* PARALLAX */
+const pb1=document.getElementById('pb1');
+const pb2=document.getElementById('pb2');
+window.addEventListener('scroll',()=>{
+  const s=window.scrollY;
+  [pb1,pb2].forEach(img=>{
+    if(!img)return;
+    const r=img.closest('.img-break').getBoundingClientRect();
+    const p=(window.innerHeight-r.top)/(window.innerHeight+r.height);
+    img.style.transform=`scale(1.08) translateY(${(p-.5)*36}px)`;
+  });
+},{passive:true});
+
+/* REVEAL */
+const rvEls=document.querySelectorAll('.rv');
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('on'); });
+},{threshold:.1,rootMargin:'0px 0px -30px 0px'});
+rvEls.forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

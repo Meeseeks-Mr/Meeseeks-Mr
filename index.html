@@ -683,6 +683,17 @@ nav {
 }
 .ban-note p { font-family: var(--fb); font-style: italic; font-size: clamp(1rem,1.5vw,1.18rem); color: var(--muted); line-height: 1.65; }
 .ban-note b { color: var(--cream); font-weight: 400; font-style: normal; }
+.library-cta {
+  display: inline-flex; align-items: center; margin-top: 18px; text-decoration: none;
+  font-family: var(--fu); font-weight: 500; font-size: .85rem; letter-spacing: .01em; color: #06140d;
+  padding: 12px 24px; border-radius: 999px;
+  background: linear-gradient(135deg, var(--amber-warm), var(--amber));
+  border: 1px solid rgba(224,144,80,0.6);
+  box-shadow: 0 0 24px rgba(196,120,60,0.32), inset 0 1px 0 rgba(255,255,255,0.3);
+  transition: transform .3s, box-shadow .3s, filter .3s;
+}
+.library-cta:hover { transform: translateY(-2px); box-shadow: 0 0 34px rgba(196,120,60,0.5), inset 0 1px 0 rgba(255,255,255,0.3); filter: brightness(1.05); }
+.shelf .book-card { text-decoration: none; }
 
 /* ===== CONTACT ===== */
 .contact-rule { width: 100%; height: 1px; background: linear-gradient(to right, transparent, var(--amber-dim), transparent); margin-bottom: clamp(50px, 8vw, 90px); }
@@ -760,15 +771,13 @@ footer {
   .prin-grid { grid-template-columns: 1fr; }
   .prin-card { display: none; }
   .shelf {
-    flex-wrap: nowrap; justify-content: flex-start; align-items: center;
-    overflow-x: auto; gap: 16px; padding: 30px 4px 22px;
-    scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
-    margin: 20px calc(50% - 50vw) 28px; padding-left: clamp(20px,5vw,40px); padding-right: clamp(20px,5vw,40px);
+    flex-wrap: wrap; justify-content: center; align-items: center;
+    overflow: visible; gap: 16px; padding: 0; perspective: none;
+    margin: 26px auto 30px; max-width: 380px;
   }
-  .shelf::-webkit-scrollbar { display: none; }
-  .shelf .book-card { width: 54vw; max-width: 220px; scroll-snap-align: center; opacity: 1; }
-  .shelf .book-card.ai { width: 64vw; max-width: 260px; }
-  .shelf .book-card.ai-center { width: 66vw; max-width: 270px; }
+  .shelf .book-card,
+  .shelf .book-card.ai,
+  .shelf .book-card.ai-center { width: 40vw; max-width: 158px; opacity: 1; }
   .shelf .book-card:nth-child(1), .shelf .book-card:nth-child(2), .shelf .book-card:nth-child(3),
   .shelf .book-card:nth-child(4), .shelf .book-card:nth-child(5) { transform: none; }
   .shelf .book-card.ai-center::after { display: none; }
@@ -996,16 +1005,17 @@ footer {
     </div>
 
     <div class="shelf rv d2">
-      <figure class="book-card flank"><img src="media/book-grammar.jpg" alt="Words Are Everywhere — a first grammar book for children" loading="lazy" width="640" height="947"></figure>
-      <figure class="book-card ai"><img src="media/book-ai1.jpg" alt="The First Book of Artificial Intelligence — ages 6–10" loading="lazy" width="560" height="829"></figure>
-      <figure class="book-card ai ai-center"><img src="media/book-ai2.jpg" alt="The Second Book of Artificial Intelligence — ages 11–15" loading="lazy" width="560" height="829"></figure>
-      <figure class="book-card ai"><img src="media/book-ai3.jpg" alt="The Third Book of Artificial Intelligence — ages 15–18" loading="lazy" width="560" height="829"></figure>
-      <figure class="book-card flank"><img src="media/book-f1.jpg" alt="The Complete Guide to Formula One Racing" loading="lazy" width="640" height="947"></figure>
+      <a class="book-card flank" href="books.html#grammar" title="Open in the library"><img src="media/book-grammar.jpg" alt="Words Are Everywhere — a first grammar book for children" loading="lazy" width="640" height="947"></a>
+      <a class="book-card ai" href="books.html#ai1" title="Open in the library"><img src="media/book-ai1.jpg" alt="The First Book of Artificial Intelligence" loading="lazy" width="560" height="829"></a>
+      <a class="book-card ai ai-center" href="books.html#ai2" title="Open in the library"><img src="media/book-ai2.jpg" alt="The Second Book of Artificial Intelligence" loading="lazy" width="560" height="829"></a>
+      <a class="book-card ai" href="books.html#ai3" title="Open in the library"><img src="media/book-ai3.jpg" alt="The Third Book of Artificial Intelligence" loading="lazy" width="560" height="829"></a>
+      <a class="book-card flank" href="books.html#f1" title="Open in the library"><img src="media/book-f1.jpg" alt="The Complete Guide to Formula One Racing" loading="lazy" width="640" height="947"></a>
     </div>
 
     <div class="ban-note rv d2">
       <span class="ban-stamp">Account Suspended</span>
-      <p>There would be buy links here. There aren't — my publishing account got suspended for reasons I've chosen to find flattering. The books are finished; the storefront isn't back. So, in the meantime: want a copy? <b>Buy me a coffee.</b> Dollars, if you're not especially pretty.</p>
+      <p>There would be buy links here. There aren't — my publishing account got suspended for reasons I've chosen to find flattering. The books are finished; the storefront isn't. So I built my own. <b>It's free.</b> Dollars only if you're not especially pretty.</p>
+      <a class="library-cta" href="books.html">Step into the library →</a>
     </div>
   </section>
 </div>

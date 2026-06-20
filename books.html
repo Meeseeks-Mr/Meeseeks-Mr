@@ -245,15 +245,18 @@ footer { border-top: 1px solid var(--line); margin-top: clamp(34px,5vw,58px); pa
   .grid { grid-template-columns: 1fr; }
   .bcard, .bcard.feature { grid-template-columns: minmax(120px,34%) 1fr; }
   .author-grid { grid-template-columns: 1fr; }
-  .author-card { max-width: 280px; }
+  .author-card { max-width: 280px; margin: 0 auto; }
 }
 @media (max-width: 560px){
   .bcard, .bcard.feature { grid-template-columns: 1fr; }
-  .bcover { max-width: 200px; }
+  .bcover { max-width: 200px; margin: 0 auto; }
   .bcover::after { opacity: 1; } /* always show hint on touch */
+  .binfo { align-items: center; text-align: center; }
+  .btag-row { justify-content: center; }
+  .bmeta { justify-content: center; gap: 6px 10px; font-size: .58rem; }
+  .bactions { justify-content: center; }
   .lb-arrow { width: 42px; height: 42px; }
   .manifesto::before { font-size: 12rem; top: -28px; }
-  .bmeta { gap: 6px 10px; font-size: .58rem; }
   .bmeta .dotsep { display: none; }
 }
 @media (prefers-reduced-motion: reduce){

@@ -6,6 +6,21 @@
 <title>dio.stesso — the library</title>
 <meta name="description" content="Books by dio.stesso — on artificial intelligence, grammar, and Formula One. Now published, on Amazon, Kindle and Google Play. The grammar one is still free, on principle.">
 <meta name="theme-color" content="#F3EADB">
+<!-- Open Graph / social share -->
+<meta property="og:type" content="book">
+<meta property="og:site_name" content="dio.stesso">
+<meta property="og:title" content="dio.stesso — the library">
+<meta property="og:description" content="Five books on AI, grammar, and Formula One — now published on Amazon, Kindle and Google Play. The grammar one is still free, on principle.">
+<meta property="og:image" content="https://meeseeks-mr.github.io/og-books.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://meeseeks-mr.github.io/books.html">
+<!-- Twitter card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@WiseBakasur">
+<meta name="twitter:title" content="dio.stesso — the library">
+<meta name="twitter:description" content="Five books on AI, grammar, and Formula One — now published on Amazon, Kindle and Google Play. The grammar one is still free, on principle.">
+<meta name="twitter:image" content="https://meeseeks-mr.github.io/og-books.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@300;400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -183,6 +198,8 @@ nav {
 .buy-store { font-family: var(--fu); font-size: .58rem; letter-spacing: .1em; text-transform: uppercase; color: var(--amber-deep); font-weight: 600; }
 .buy-fmt { font-family: var(--fu); font-size: .68rem; color: var(--ink-faint); }
 .buy-price { font-family: var(--fd); font-weight: 700; font-size: .96rem; color: var(--ink); margin-top: 2px; letter-spacing: .01em; }
+.buy-price s { color: var(--ink-faint); font-weight: 400; font-size: .8em; margin-right: 4px; text-decoration-thickness: 1px; }
+.lb-foot .buy-price s { color: rgba(42,24,16,0.42); }
 .buy-soon { opacity: .72; cursor: default; }
 .buy-soon:hover { transform: none; box-shadow: none; background: rgba(255,255,255,0.62); }
 .buy-soon .buy-price { color: var(--amber-deep); font-style: italic; font-size: .8rem; font-family: var(--fb); }
@@ -489,6 +506,11 @@ const STORE = {
   grammar: { free:true }
 };
 
+/* Google Play price markup: struck list price + discounted price when on sale */
+function playPriceHTML(p){
+  return p && p.sale ? `<s>${p.price}</s> ${p.sale}` : (p ? p.price : '');
+}
+
 /* build the buy row (and witty caption) for a book */
 function buyHTML(slug){
   const s = STORE[slug];
@@ -512,7 +534,7 @@ function buyHTML(slug){
     btns += `<a class="buy buy-kindle" href="${s.kindle.url}" target="_blank" rel="noopener"><span class="buy-store">Kindle</span><span class="buy-fmt">eBook</span><span class="buy-price">${s.kindle.price}</span></a>`;
   }
   if(s.play && s.play.url){
-    btns += `<a class="buy buy-play" data-play="${slug}" href="${s.play.url}" target="_blank" rel="noopener"><span class="buy-store">Google Play</span><span class="buy-fmt">eBook</span><span class="buy-price">${s.play.price}</span></a>`;
+    btns += `<a class="buy buy-play" data-play="${slug}" href="${s.play.url}" target="_blank" rel="noopener"><span class="buy-store">Google Play</span><span class="buy-fmt">eBook</span><span class="buy-price">${playPriceHTML(s.play)}</span></a>`;
   }
   let note = '';
   if(s.paperback && s.paperback.url){
@@ -557,27 +579,50 @@ BOOKS.forEach(bk=>{
   for(const slug in STORE){ if(STORE[slug].play && STORE[slug].play.url){
     const m = STORE[slug].play.url.match(/[?&]id=([^&]+)/); if(m) ids[slug] = m[1];
   }}
-  // Google Play sends no CORS headers, so we route through a read-only proxy; any failure keeps ₹ default.
-  const proxy = u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u);
-  function setPlay(slug, price){
-    if(STORE[slug] && STORE[slug].play) STORE[slug].play.price = price;
-    document.querySelectorAll(`[data-play="${slug}"] .buy-price`).forEach(el=>{ el.textContent = price; });
+  // Google Play sends no CORS headers, so we route through read-only proxies (tried in order).
+  const PROXIES = [
+    u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),   // returns raw HTML incl. real ₹ prices
+    u => 'https://r.jina.ai/' + u,                                        // renders JS → clean text fallback
+    u => 'https://corsproxy.io/?url=' + encodeURIComponent(u)
+  ];
+  function setPlay(slug, list, sale){
+    const p = STORE[slug] && STORE[slug].play; if(!p) return;
+    p.price = list; p.sale = sale || null;
+    document.querySelectorAll(`[data-play="${slug}"] .buy-price`).forEach(el=>{ el.innerHTML = playPriceHTML(p); });
   }
-  Object.entries(ids).forEach(([slug,id])=>{
+  function parsePrices(raw){
+    // normalise every way the rupee sign can appear (escaped unicode, entities, "Rs")
+    const txt = raw
+      .replace(/\\u20b9/gi, '₹').replace(/\\u00a0/g, ' ')
+      .replace(/&#8377;|&#x20b9;/gi, '₹').replace(/\bRs\.?\s?/gi, '₹')
+      .replace(/&nbsp;/gi, ' ');
+    const found = txt.match(/₹\s?[\d,]+(?:\.\d{1,2})?/g) || [];
+    const nums = [...new Set(found
+      .map(s => parseFloat(s.replace(/[₹,\s]/g, '')))
+      .filter(n => n >= 30 && n <= 8000))]            // sanity bounds
+      .sort((a, b) => a - b);
+    return nums;
+  }
+  async function tryFetch(url){
+    for(const make of PROXIES){
+      try{
+        const r = await fetch(make(url), { cache:'no-store' });
+        if(!r.ok) continue;
+        const nums = parsePrices(await r.text());
+        if(nums.length) return nums;
+      }catch(e){ /* try next proxy */ }
+    }
+    return null;
+  }
+  Object.entries(ids).forEach(async ([slug, id])=>{
     const url = `https://play.google.com/store/books/details?id=${id}&hl=en&gl=IN`;
-    fetch(proxy(url), {cache:'no-store'})
-      .then(r=> r.ok ? r.text() : Promise.reject())
-      .then(html=>{
-        const found = html.match(/₹\s?[\d,]+(?:\.\d{1,2})?/g);
-        if(!found) return;
-        const nums = found
-          .map(s=>parseFloat(s.replace(/[₹,\s]/g,'')))
-          .filter(n=> n >= 30 && n <= 8000);          // sanity bounds
-        if(!nums.length) return;
-        const low = Math.min(...nums);                 // sale price = the lowest plausible ₹ on the page
-        setPlay(slug, '₹' + Math.round(low));
-      })
-      .catch(()=>{ /* keep the default ₹ price already on screen */ });
+    const nums = await tryFetch(url);
+    if(!nums) return;                                  // all proxies failed → keep ₹ default on screen
+    if(nums.length >= 2){
+      setPlay(slug, '₹' + Math.round(nums[nums.length-1]), '₹' + Math.round(nums[0]));  // list (max) struck, sale (min)
+    } else {
+      setPlay(slug, '₹' + Math.round(nums[0]), null);  // single price, no discount
+    }
   });
 })();
 
@@ -709,22 +754,22 @@ if (!reduce && canvas) {
         vec2 q = vUv * vec2(3.0, 3.0 * uRes.y / max(uRes.x,1.0));
         float amb = noise(q + vec2(uTime*0.04, -uTime*0.03));
         amb += 0.5 * noise(q*2.1 + vec2(-uTime*0.05, uTime*0.02));
-        h += (amb - 0.75) * 0.5;
+        h += (amb - 0.75) * 0.7;
         float dM = distance(px, uMouse);
-        h += sin(dM*0.05 - uTime*4.0) * exp(-dM*0.010) * (0.45 + uMouseStr*2.2);
+        h += sin(dM*0.045 - uTime*4.5) * exp(-dM*0.0072) * (0.85 + uMouseStr*3.4);
         for(int i=0;i<12;i++){
           vec4 r = uRipples[i];
           if(r.w <= 0.001) continue;
           float age = uTime - r.z;
-          if(age < 0.0 || age > 3.0) continue;
+          if(age < 0.0 || age > 3.2) continue;
           float d = distance(px, vec2(r.x, r.y));
-          float radius = age * 320.0;
-          h += sin((d - radius)*0.06) * exp(-abs(d - radius)*0.014) * exp(-age*1.2) * r.w;
+          float radius = age * 340.0;
+          h += sin((d - radius)*0.055) * exp(-abs(d - radius)*0.010) * exp(-age*1.0) * r.w * 1.5;
         }
         float crest = abs(h);
-        float light = smoothstep(0.06, 0.5, crest);
-        vec3 col = mix(vec3(0.74,0.43,0.18), vec3(1.0,0.84,0.58), smoothstep(0.2,0.9,crest));
-        gl_FragColor = vec4(col, light * 0.42);
+        float light = smoothstep(0.035, 0.42, crest);
+        vec3 col = mix(vec3(0.74,0.43,0.18), vec3(1.0,0.84,0.58), smoothstep(0.15,0.9,crest));
+        gl_FragColor = vec4(col, light * 0.62);
       }`;
     const renderer = new THREE.WebGLRenderer({ canvas, alpha:true, antialias:true, premultipliedAlpha:false });
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -747,12 +792,12 @@ if (!reduce && canvas) {
     resize(); addEventListener('resize', resize);
     const target = new THREE.Vector2(-2000,-2000);
     let lastX=-2000, lastY=-2000, strTarget=0, rIdx=0;
-    function moveAt(x,y){ if(lastX>-1999){ strTarget = Math.min(1.3, Math.hypot(x-lastX, y-lastY)/26); } target.set(x,y); lastX=x; lastY=y; }
+    function moveAt(x,y){ if(lastX>-1999){ strTarget = Math.min(2.0, Math.hypot(x-lastX, y-lastY)/16); } target.set(x,y); lastX=x; lastY=y; }
     function ripple(x,y,s){ uniforms.uRipples.value[rIdx % RIP].set(x, y, uniforms.uTime.value, s); rIdx++; }
     addEventListener('pointermove', e=>moveAt(e.clientX, e.clientY), {passive:true});
-    addEventListener('pointerdown', e=>ripple(e.clientX, e.clientY, 1.5), {passive:true});
+    addEventListener('pointerdown', e=>ripple(e.clientX, e.clientY, 2.2), {passive:true});
     addEventListener('touchmove', e=>{ const t=e.touches[0]; if(t) moveAt(t.clientX, t.clientY); }, {passive:true});
-    addEventListener('touchstart', e=>{ const t=e.touches[0]; if(t) ripple(t.clientX, t.clientY, 1.5); }, {passive:true});
+    addEventListener('touchstart', e=>{ const t=e.touches[0]; if(t) ripple(t.clientX, t.clientY, 2.2); }, {passive:true});
     const clock = new THREE.Clock(); const mouse = uniforms.uMouse.value;
     (function loop(){
       uniforms.uTime.value = clock.getElapsedTime();

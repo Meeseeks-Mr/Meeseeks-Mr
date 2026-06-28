@@ -496,7 +496,7 @@ const STORE = {
     play:{ url:'https://play.google.com/store/books/details?id=4s7tEQAAQBAJ', price:'₹826' }
   },
   ai3: {
-    paperback:{ soon:true },
+    paperback:{ url:'https://www.amazon.com/dp/B0H6TR2DKY', price:'$18' },
     kindle:{ url:'https://www.amazon.in/dp/B0H6T6KV3P', price:'₹755' },
     play:{ url:'https://play.google.com/store/books/details?id=7s7tEQAAQBAJ', price:'₹826' }
   },
@@ -738,9 +738,7 @@ if (!reduce && canvas) {
       varying vec2 vUv;
       uniform vec2 uRes;
       uniform float uTime;
-      uniform vec2 uMouse;
-      uniform float uMouseStr;
-      uniform vec4 uRipples[12];
+      uniform vec4 uRipples[28];
       float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453123); }
       float noise(vec2 p){
         vec2 i=floor(p), f=fract(p);
@@ -751,36 +749,36 @@ if (!reduce && canvas) {
       void main(){
         vec2 px = vec2(vUv.x, 1.0 - vUv.y) * uRes;
         float h = 0.0;
+        // faint resting shimmer — the surface is never glassy, but it does not chase the cursor
         vec2 q = vUv * vec2(3.0, 3.0 * uRes.y / max(uRes.x,1.0));
         float amb = noise(q + vec2(uTime*0.04, -uTime*0.03));
         amb += 0.5 * noise(q*2.1 + vec2(-uTime*0.05, uTime*0.02));
-        h += (amb - 0.75) * 0.7;
-        float dM = distance(px, uMouse);
-        h += sin(dM*0.045 - uTime*4.5) * exp(-dM*0.0072) * (0.85 + uMouseStr*3.4);
-        for(int i=0;i<12;i++){
+        h += (amb - 0.75) * 0.32;
+        // every disturbance (move or click) is a real ring: it expands, weakens with age,
+        // and superposes with every other ring — older ones linger and interfere with new ones
+        for(int i=0;i<28;i++){
           vec4 r = uRipples[i];
           if(r.w <= 0.001) continue;
           float age = uTime - r.z;
-          if(age < 0.0 || age > 3.2) continue;
+          if(age < 0.0 || age > 5.0) continue;
           float d = distance(px, vec2(r.x, r.y));
-          float radius = age * 340.0;
-          h += sin((d - radius)*0.055) * exp(-abs(d - radius)*0.010) * exp(-age*1.0) * r.w * 1.5;
+          float radius = age * 230.0;
+          float ring = sin((d - radius)*0.060) * exp(-abs(d - radius)*0.013);
+          h += ring * exp(-age*0.85) * r.w;
         }
         float crest = abs(h);
-        float light = smoothstep(0.035, 0.42, crest);
+        float light = smoothstep(0.030, 0.42, crest);
         vec3 col = mix(vec3(0.74,0.43,0.18), vec3(1.0,0.84,0.58), smoothstep(0.15,0.9,crest));
-        gl_FragColor = vec4(col, light * 0.62);
+        gl_FragColor = vec4(col, light * 0.70);
       }`;
     const renderer = new THREE.WebGLRenderer({ canvas, alpha:true, antialias:true, premultipliedAlpha:false });
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     const scene = new THREE.Scene();
     const camera = new THREE.Camera();
-    const RIP = 12;
+    const RIP = 28;
     const uniforms = {
       uTime:{ value:0 },
       uRes:{ value:new THREE.Vector2(innerWidth, innerHeight) },
-      uMouse:{ value:new THREE.Vector2(-2000,-2000) },
-      uMouseStr:{ value:0 },
       uRipples:{ value: Array.from({length:RIP}, ()=>new THREE.Vector4(0,0,-100,0)) }
     };
     const mesh = new THREE.Mesh(
@@ -790,20 +788,28 @@ if (!reduce && canvas) {
     scene.add(mesh);
     function resize(){ renderer.setSize(innerWidth, innerHeight); uniforms.uRes.value.set(innerWidth, innerHeight); }
     resize(); addEventListener('resize', resize);
-    const target = new THREE.Vector2(-2000,-2000);
-    let lastX=-2000, lastY=-2000, strTarget=0, rIdx=0;
-    function moveAt(x,y){ if(lastX>-1999){ strTarget = Math.min(2.0, Math.hypot(x-lastX, y-lastY)/16); } target.set(x,y); lastX=x; lastY=y; }
+    let lastX=null, lastY=null, accum=0, rIdx=0;
+    const STEP = 20; // px of travel between trail ripples — no movement, no new waves
     function ripple(x,y,s){ uniforms.uRipples.value[rIdx % RIP].set(x, y, uniforms.uTime.value, s); rIdx++; }
+    function moveAt(x,y){
+      if(lastX!==null){
+        const dx=x-lastX, dy=y-lastY, d=Math.hypot(dx,dy);
+        accum += d;
+        while(accum >= STEP){
+          accum -= STEP;
+          const t = (d - accum) / Math.max(d, 0.001); // walk the path so fast moves leave an even trail
+          ripple(lastX + dx*t, lastY + dy*t, Math.min(1.3, 0.45 + d*0.045));
+        }
+      }
+      lastX=x; lastY=y;
+    }
     addEventListener('pointermove', e=>moveAt(e.clientX, e.clientY), {passive:true});
-    addEventListener('pointerdown', e=>ripple(e.clientX, e.clientY, 2.2), {passive:true});
+    addEventListener('pointerdown', e=>ripple(e.clientX, e.clientY, 2.6), {passive:true});
     addEventListener('touchmove', e=>{ const t=e.touches[0]; if(t) moveAt(t.clientX, t.clientY); }, {passive:true});
-    addEventListener('touchstart', e=>{ const t=e.touches[0]; if(t) ripple(t.clientX, t.clientY, 2.2); }, {passive:true});
-    const clock = new THREE.Clock(); const mouse = uniforms.uMouse.value;
+    addEventListener('touchstart', e=>{ const t=e.touches[0]; if(t) ripple(t.clientX, t.clientY, 2.6); }, {passive:true});
+    const clock = new THREE.Clock();
     (function loop(){
       uniforms.uTime.value = clock.getElapsedTime();
-      mouse.lerp(target, 0.55);
-      uniforms.uMouseStr.value += (strTarget - uniforms.uMouseStr.value) * 0.18;
-      strTarget *= 0.9;
       renderer.render(scene, camera);
       requestAnimationFrame(loop);
     })();

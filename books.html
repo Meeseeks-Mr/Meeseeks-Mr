@@ -95,7 +95,7 @@ body {
 }
 #buddy.in { opacity: 1; transform: translateY(10%); }
 #buddy.away { opacity: 1; transform: translateY(118%) rotate(8deg); transition: transform .85s cubic-bezier(.5,0,.75,0), opacity .4s ease .5s; }
-@media (max-width: 767px) { #buddy { width: 42vw; height: 50vw; right: 2px; } }
+@media (max-width: 767px) { #buddy { width: 52vw; height: 62vw; right: 0; } }
 #water { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 60; pointer-events: none; mix-blend-mode: screen; opacity: .5; }
 
 /* ===== LAYOUT ===== */
@@ -907,8 +907,8 @@ if (statueCv) {
       bRenderer.outputColorSpace = THREE.SRGBColorSpace;
       bScene = new THREE.Scene();
       bCam = new THREE.PerspectiveCamera(32, 1, 0.1, 30);
-      bCam.position.set(0, 1.9, 3.6);                  // full head and shoulders, nothing clipped at the sides
-      bCam.lookAt(0, 1.66, 0);
+      bCam.position.set(0, 1.85, 4.4);                 // wide margins — shoulders stay inside even mid-turn
+      bCam.lookAt(0, 1.52, 0);
       bScene.add(new THREE.HemisphereLight(0xfff4e2, 0xc4783c, 1.5));
       const bKey = new THREE.DirectionalLight(0xffe0b8, 2.8); bKey.position.set(-2.5, 3.5, 3);
       const bRim = new THREE.PointLight(0xe09050, 12, 10, 2); bRim.position.set(2.2, 2.4, -1.6);
@@ -918,7 +918,9 @@ if (statueCv) {
       function bSize() {
         const w = buddyCv.clientWidth || 240, h = buddyCv.clientHeight || 300;
         bRenderer.setSize(w, h, false);
-        bCam.aspect = w / h; bCam.updateProjectionMatrix();
+        bCam.aspect = w / h;
+        bCam.position.z = bCam.aspect < 0.92 ? 5.1 : 4.4;   // narrow (phone) canvas → step back further
+        bCam.updateProjectionMatrix();
       }
       bSize(); addEventListener('resize', bSize);
     }
@@ -956,20 +958,28 @@ if (statueCv) {
       }), { threshold: 0.18 }).observe(authorSec);
     }
 
+    const coarse = window.matchMedia('(pointer: coarse)').matches;
     const mouse = { x: 0, y: 0, sx: 0, sy: 0 };
-    addEventListener('pointermove', e => {
-      mouse.x = (e.clientX / innerWidth) * 2 - 1;
-      mouse.y = (e.clientY / innerHeight) * 2 - 1;
-    });
+    function aimAt(cx, cy) {
+      mouse.x = (cx / innerWidth) * 2 - 1;
+      mouse.y = (cy / innerHeight) * 2 - 1;
+    }
+    addEventListener('pointermove', e => aimAt(e.clientX, e.clientY));
+    // taps count as attention too — he looks where you touch
+    addEventListener('pointerdown', e => aimAt(e.clientX, e.clientY), { passive: true });
 
-    // hover: he pays attention. click/tap: a full show-off spin.
+    // hover: he pays attention. desktop click: a full show-off spin.
+    // touch tap: a quick pleased nod (a surprise 360 felt broken on phones).
     const card = statueCv.closest('.author-card');
-    let hover = 0, hoverT = 0, spin = 0, spinV = 0;
+    let hover = 0, hoverT = 0, spin = 0, spinV = 0, nod = 0;
     if (card) {
       card.style.cursor = 'pointer';
       card.addEventListener('pointerenter', () => hoverT = 1);
       card.addEventListener('pointerleave', () => hoverT = 0);
-      card.addEventListener('click', () => { if (spinV === 0) spinV = 0.14; });
+      card.addEventListener('click', () => {
+        if (coarse) { if (nod <= 0) nod = 1; }
+        else if (spinV === 0) spinV = 0.14;
+      });
       card.title = 'the author appreciates the attention';
     }
 
@@ -995,9 +1005,14 @@ if (statueCv) {
           if (spin >= Math.PI * 2) { spin = 0; spinV = 0; }
         }
 
-        const gaze = 0.22 + hover * 0.5;              // locks onto the cursor when hovered
+        // touch: no hover exists, so the gaze is always attentive
+        const gaze = coarse ? 0.55 : 0.22 + hover * 0.5;
         model.rotation.y = -0.22 + spin + mouse.sx * gaze + Math.sin(t * 0.24) * 0.05;
         model.rotation.x = mouse.sy * (0.05 + hover * 0.06);
+        if (nod > 0) {                                // tap response: a warm double-nod
+          model.rotation.x += Math.sin((1 - nod) * Math.PI * 4) * 0.09 * nod;
+          nod -= 0.022;
+        }
         model.position.y = Math.sin(t * 0.5) * 0.025;
         const lean = 1 + hover * 0.045;               // leans in slightly for a closer look
         const br = lean + Math.sin(t * 0.85) * 0.004;
@@ -1023,15 +1038,17 @@ if (statueCv) {
        with no cursor (touch), he glances around the room on his own */
     const bMouse = { tx: 0, ty: 0, x: 0, y: 0 };
     let lastPointer = -10;
-    addEventListener('pointermove', e => {
+    function aimBuddy(cx, cy) {
       if (!buddyCv) return;
       lastPointer = performance.now() / 1000;
       const r = buddyCv.getBoundingClientRect();
-      const dx = e.clientX - (r.left + r.width / 2);
-      const dy = e.clientY - (r.top + r.height * 0.35);      // eye level, not canvas centre
+      const dx = cx - (r.left + r.width / 2);
+      const dy = cy - (r.top + r.height * 0.35);             // eye level, not canvas centre
       bMouse.tx = Math.max(-0.85, Math.min(0.85, dx / innerWidth * 2.6));
       bMouse.ty = Math.max(-0.55, Math.min(0.18, dy / innerHeight * 1.4));   // generous upward range, tight downward
-    });
+    }
+    addEventListener('pointermove', e => aimBuddy(e.clientX, e.clientY));
+    addEventListener('pointerdown', e => aimBuddy(e.clientX, e.clientY), { passive: true });
     const bClock = new THREE.Clock();
     (function buddyLoop() {
       if (!bRenderer) return;

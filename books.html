@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@300;400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }</script>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }</script>
 <style>
 :root {
   --paper: #F4EBDC;
@@ -77,7 +77,26 @@ body {
 .blob.b2 { width: 38vw; height: 38vw; right: -6vw; top: 30vh; background: radial-gradient(circle,#E8A877,transparent 70%); animation-delay: -8s; }
 .blob.b3 { width: 46vw; height: 46vw; left: 24vw; bottom: -14vh; background: radial-gradient(circle,#F2D2A0,transparent 70%); animation-delay: -15s; }
 #dust { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
-#water { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 60; pointer-events: none; mix-blend-mode: screen; }
+/* the author's statue — a lit portrait inside the dark author card */
+#statue {
+  position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2;
+  opacity: 0; transition: opacity 1.4s ease;
+}
+#statue.on { opacity: 1; }
+/* the corner companion — rides along in the bottom-right, then bows out
+   when the author portrait takes the stage */
+#buddy {
+  position: fixed; right: clamp(6px, 2vw, 30px); bottom: -2px; z-index: 70;
+  width: min(34vw, 350px); height: min(40vw, 400px);
+  pointer-events: none; opacity: 0;
+  transform: translateY(112%);
+  transition: transform 1s var(--ease), opacity .5s ease .1s;
+  filter: drop-shadow(0 18px 30px rgba(80,46,16,0.35));
+}
+#buddy.in { opacity: 1; transform: translateY(10%); }
+#buddy.away { opacity: 1; transform: translateY(118%) rotate(8deg); transition: transform .85s cubic-bezier(.5,0,.75,0), opacity .4s ease .5s; }
+@media (max-width: 767px) { #buddy { width: 42vw; height: 50vw; right: 2px; } }
+#water { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 60; pointer-events: none; mix-blend-mode: screen; opacity: .5; }
 
 /* ===== LAYOUT ===== */
 .wrap { position: relative; z-index: 10; max-width: 1180px; margin: 0 auto; padding: 0 clamp(20px,5vw,72px); }
@@ -216,11 +235,11 @@ nav {
 .lb-foot .buy-note { color: rgba(251,246,236,0.66); text-align: center; max-width: 460px; }
 
 /* ===== AUTHOR ===== */
-.author-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: clamp(28px,4vw,52px); align-items: center; }
-.author-card { position: relative; aspect-ratio: 1; border-radius: 24px; overflow: hidden; background: linear-gradient(150deg,#1C0F09,#3D2214); box-shadow: 0 26px 70px rgba(60,34,12,0.4); display: flex; align-items: center; justify-content: center; container-type: inline-size; }
+.author-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: clamp(28px,4vw,52px); align-items: center; }
+.author-card { order: 2; position: relative; aspect-ratio: 1; border-radius: 24px; overflow: hidden; background: linear-gradient(150deg,#1C0F09,#3D2214); box-shadow: 0 26px 70px rgba(60,34,12,0.4); display: flex; align-items: center; justify-content: center; container-type: inline-size; }
 .author-card .mono { font-family: var(--fd); font-weight: 800; font-size: clamp(3rem, 28cqi, 6rem); color: transparent; -webkit-text-stroke: 1.5px rgba(224,144,80,0.6); letter-spacing: -.03em; }
 .author-card .mono b { color: var(--amber); -webkit-text-stroke: 0; }
-.author-card::after { content: 'the author · between drafts'; position: absolute; bottom: 18px; left: 0; right: 0; text-align: center; font-family: var(--fm); font-size: .54rem; letter-spacing: .22em; text-transform: uppercase; color: rgba(237,230,216,0.5); }
+.author-card::after { content: 'the author · between drafts'; z-index: 3; position: absolute; bottom: 18px; left: 0; right: 0; text-align: center; font-family: var(--fm); font-size: .54rem; letter-spacing: .22em; text-transform: uppercase; color: rgba(237,230,216,0.5); }
 .author-body p { font-size: clamp(.98rem,1.4vw,1.1rem); color: var(--ink2); line-height: 1.7; margin-bottom: 14px; }
 .author-body b { color: var(--ink); font-weight: 500; }
 .author-pull { font-family: var(--fb); font-style: italic; font-size: clamp(1.3rem,2.6vw,1.9rem); line-height: 1.35; color: var(--ink); margin-bottom: 24px; padding-left: 20px; border-left: 2px solid var(--amber); }
@@ -314,6 +333,7 @@ window.scrollTo(0, 0);
 <div class="bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
 <canvas id="dust"></canvas>
 <canvas id="water"></canvas>
+<canvas id="buddy" aria-hidden="true"></canvas>
 
 <!-- DRAWER -->
 <div class="drawer" id="drawer">
@@ -401,6 +421,7 @@ window.scrollTo(0, 0);
     <div class="author-grid">
       <div class="author-card rv">
         <div class="mono">d<b>.</b>s</div>
+        <canvas id="statue" aria-hidden="true"></canvas>
       </div>
       <div class="author-body">
         <div class="lbl rv">The author, briefly</div>
@@ -814,6 +835,226 @@ if (!reduce && canvas) {
       requestAnimationFrame(loop);
     })();
   } catch(err){ /* WebGL unavailable — page works fine without the liquid layer */ }
+}
+</script>
+
+<!-- ===== THE AUTHOR'S PORTRAIT — the bust from the profile, lit like a study at dusk ===== -->
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const statueCv = document.getElementById('statue');
+const reduceS = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (statueCv) {
+  try {
+    const renderer = new THREE.WebGLRenderer({ canvas: statueCv, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 40);
+    camera.position.set(0, 1.7, 3.1);                 // intimate portrait framing
+    camera.lookAt(0, 1.55, 0);
+
+    function sizeIt() {
+      const w = statueCv.clientWidth || 480, h = statueCv.clientHeight || 480;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h; camera.updateProjectionMatrix();
+    }
+    sizeIt(); addEventListener('resize', sizeIt);
+
+    // study-at-dusk lighting over the card's dark mahogany gradient
+    scene.add(new THREE.AmbientLight(0x40342a, 1.1));
+    const key = new THREE.DirectionalLight(0xffe0b8, 3.2);   // warm lamp from the page side
+    key.position.set(-2.6, 3.4, 3);
+    const rim = new THREE.PointLight(0xe09050, 18, 12, 2);   // amber rim
+    rim.position.set(2.6, 2, -1.8);
+    const fill = new THREE.PointLight(0xf6d9b0, 5, 10, 2);
+    fill.position.set(1.6, 0.6, 2.6);
+    scene.add(key, rim, fill);
+
+    // drifting dust motes in the lamplight
+    const N = 90;
+    const pgeo = new THREE.BufferGeometry();
+    const ppos = new Float32Array(N * 3), pseed = new Float32Array(N);
+    for (let i = 0; i < N; i++) {
+      ppos[i*3] = (Math.random()-.5) * 3.2;
+      ppos[i*3+1] = Math.random() * 3;
+      ppos[i*3+2] = (Math.random()-.5) * 2.5;
+      pseed[i] = Math.random() * Math.PI * 2;
+    }
+    pgeo.setAttribute('position', new THREE.BufferAttribute(ppos, 3));
+    const pc = document.createElement('canvas'); pc.width = pc.height = 32;
+    const pg = pc.getContext('2d');
+    const pgrd = pg.createRadialGradient(16,16,0,16,16,16);
+    pgrd.addColorStop(0,'rgba(255,220,170,1)'); pgrd.addColorStop(1,'rgba(255,220,170,0)');
+    pg.fillStyle = pgrd; pg.fillRect(0,0,32,32);
+    const motes = new THREE.Points(pgeo, new THREE.PointsMaterial({
+      map: new THREE.CanvasTexture(pc), color: 0xe8b880, size: 0.035,
+      transparent: true, opacity: 0.65, depthWrite: false, blending: THREE.AdditiveBlending
+    }));
+    scene.add(motes);
+
+    /* --- corner companion: its own tiny stage, same sculpture --- */
+    const buddyCv = document.getElementById('buddy');
+    let bScene = null, bCam = null, bRenderer = null, bModel = null, buddyOK = false;
+    if (buddyCv) {
+      bRenderer = new THREE.WebGLRenderer({ canvas: buddyCv, alpha: true, antialias: true });
+      bRenderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      bRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+      bRenderer.outputColorSpace = THREE.SRGBColorSpace;
+      bScene = new THREE.Scene();
+      bCam = new THREE.PerspectiveCamera(32, 1, 0.1, 30);
+      bCam.position.set(0, 1.9, 3.6);                  // full head and shoulders, nothing clipped at the sides
+      bCam.lookAt(0, 1.66, 0);
+      bScene.add(new THREE.HemisphereLight(0xfff4e2, 0xc4783c, 1.5));
+      const bKey = new THREE.DirectionalLight(0xffe0b8, 2.8); bKey.position.set(-2.5, 3.5, 3);
+      const bRim = new THREE.PointLight(0xe09050, 12, 10, 2); bRim.position.set(2.2, 2.4, -1.6);
+      bScene.add(bKey, bRim);
+      bModel = new THREE.Group();
+      bScene.add(bModel);
+      function bSize() {
+        const w = buddyCv.clientWidth || 240, h = buddyCv.clientHeight || 300;
+        bRenderer.setSize(w, h, false);
+        bCam.aspect = w / h; bCam.updateProjectionMatrix();
+      }
+      bSize(); addEventListener('resize', bSize);
+    }
+
+    const model = new THREE.Group();
+    scene.add(model);
+    let bust = null;
+    new GLTFLoader().load('ape.glb', gltf => {
+      bust = gltf.scene;
+      bust.rotation.y = -Math.PI / 2;                 // face forward (model ships facing +X)
+      const box = new THREE.Box3().setFromObject(bust);
+      const size = box.getSize(new THREE.Vector3());
+      bust.scale.setScalar(2.3 / size.y);
+      box.setFromObject(bust);
+      const center = box.getCenter(new THREE.Vector3());
+      bust.position.x -= center.x; bust.position.z -= center.z;
+      bust.position.y -= box.min.y;
+      bust.traverse(o => { if (o.isMesh && o.material) o.material.envMapIntensity = 0.7; });
+      model.add(bust);
+      model.rotation.y = -0.22;                       // angled toward the author's own words
+      statueCv.classList.add('on');
+      // clone into the corner stage (materials shared — cheap)
+      if (bModel) {
+        bModel.add(bust.clone(true));
+        buddyOK = true;
+        setTimeout(() => buddyCv.classList.add('in'), 600);   // slides up after the page settles
+      }
+    });
+
+    // the companion bows out while the author portrait is on stage
+    const authorSec = document.getElementById('author');
+    if (buddyCv && authorSec) {
+      new IntersectionObserver(es => es.forEach(e => {
+        buddyCv.classList.toggle('away', e.isIntersecting);
+      }), { threshold: 0.18 }).observe(authorSec);
+    }
+
+    const mouse = { x: 0, y: 0, sx: 0, sy: 0 };
+    addEventListener('pointermove', e => {
+      mouse.x = (e.clientX / innerWidth) * 2 - 1;
+      mouse.y = (e.clientY / innerHeight) * 2 - 1;
+    });
+
+    // hover: he pays attention. click/tap: a full show-off spin.
+    const card = statueCv.closest('.author-card');
+    let hover = 0, hoverT = 0, spin = 0, spinV = 0;
+    if (card) {
+      card.style.cursor = 'pointer';
+      card.addEventListener('pointerenter', () => hoverT = 1);
+      card.addEventListener('pointerleave', () => hoverT = 0);
+      card.addEventListener('click', () => { if (spinV === 0) spinV = 0.14; });
+      card.title = 'the author appreciates the attention';
+    }
+
+    // only render while the card is on screen
+    let visible = false;
+    new IntersectionObserver(es => es.forEach(e => visible = e.isIntersecting), { rootMargin: '100px' })
+      .observe(statueCv);
+
+    const clock = new THREE.Clock();
+    (function loop() {
+      requestAnimationFrame(loop);
+      if (!visible) return;
+      const t = clock.getElapsedTime();
+      if (bust && !reduceS) {
+        mouse.sx += (mouse.x - mouse.sx) * 0.05;
+        mouse.sy += (mouse.y - mouse.sy) * 0.05;
+        hover += (hoverT - hover) * 0.06;
+
+        // one smooth 360° when clicked, easing out near the end
+        if (spinV > 0) {
+          spin += spinV;
+          if (spin > Math.PI * 2 - 0.6) spinV = Math.max(0.015, spinV * 0.92);
+          if (spin >= Math.PI * 2) { spin = 0; spinV = 0; }
+        }
+
+        const gaze = 0.22 + hover * 0.5;              // locks onto the cursor when hovered
+        model.rotation.y = -0.22 + spin + mouse.sx * gaze + Math.sin(t * 0.24) * 0.05;
+        model.rotation.x = mouse.sy * (0.05 + hover * 0.06);
+        model.position.y = Math.sin(t * 0.5) * 0.025;
+        const lean = 1 + hover * 0.045;               // leans in slightly for a closer look
+        const br = lean + Math.sin(t * 0.85) * 0.004;
+        model.scale.set(br, lean + Math.sin(t * 0.85 + 1) * 0.004, br);
+
+        // lamplight breathes; rim swings gently like a passing reflection
+        key.intensity = 3.2 + Math.sin(t * 0.4) * 0.35 + hover * 0.7;
+        rim.position.x = 2.6 * Math.cos(t * 0.15);
+        rim.position.z = -1.8 + Math.sin(t * 0.15) * 0.8;
+      }
+      // dust rises through the light
+      const pa = pgeo.attributes.position;
+      for (let i = 0; i < N; i++) {
+        pa.array[i*3]   += Math.sin(t * 0.3 + pseed[i]) * 0.0012;
+        pa.array[i*3+1] += 0.0016;
+        if (pa.array[i*3+1] > 3) pa.array[i*3+1] = 0;
+      }
+      pa.needsUpdate = true;
+      renderer.render(scene, camera);
+    })();
+
+    /* companion loop — follows the cursor around the page like a desk pet;
+       with no cursor (touch), he glances around the room on his own */
+    const bMouse = { tx: 0, ty: 0, x: 0, y: 0 };
+    let lastPointer = -10;
+    addEventListener('pointermove', e => {
+      if (!buddyCv) return;
+      lastPointer = performance.now() / 1000;
+      const r = buddyCv.getBoundingClientRect();
+      const dx = e.clientX - (r.left + r.width / 2);
+      const dy = e.clientY - (r.top + r.height * 0.35);      // eye level, not canvas centre
+      bMouse.tx = Math.max(-0.85, Math.min(0.85, dx / innerWidth * 2.6));
+      bMouse.ty = Math.max(-0.55, Math.min(0.18, dy / innerHeight * 1.4));   // generous upward range, tight downward
+    });
+    const bClock = new THREE.Clock();
+    (function buddyLoop() {
+      if (!bRenderer) return;
+      requestAnimationFrame(buddyLoop);
+      if (!buddyOK || buddyCv.classList.contains('away')) return;
+      const t = bClock.getElapsedTime();
+      if (!reduceS) {
+        // idle wander: no pointer activity for a while → look around on his own
+        if (performance.now() / 1000 - lastPointer > 3) {
+          bMouse.tx = Math.sin(t * 0.26) * 0.45 + Math.sin(t * 0.71) * 0.12;
+          bMouse.ty = -0.12 + Math.sin(t * 0.19) * 0.14;
+        }
+        bMouse.x += (bMouse.tx - bMouse.x) * 0.08;
+        bMouse.y += (bMouse.ty - bMouse.y) * 0.08;
+        bModel.rotation.y = bMouse.x + Math.sin(t * 0.6) * 0.03;
+        bModel.rotation.x = bMouse.y * 0.8;                  // tilts up to follow a high cursor
+        bModel.rotation.z = bMouse.x * -0.05;                // tiny head-cock toward the cursor
+        // rises a little when looking up — never enough to expose the cut base
+        bModel.position.y = Math.sin(t * 1.1) * 0.02 + Math.max(0, -bMouse.y) * 0.16;
+      }
+      bRenderer.render(bScene, bCam);
+    })();
+  } catch (err) { /* WebGL unavailable — the library reads fine without its statue */ }
 }
 </script>
 </body>

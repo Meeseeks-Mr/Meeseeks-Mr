@@ -200,6 +200,44 @@ body.ready nav { animation: navdrop .8s .3s var(--ease) forwards; }
 .panel-wide { max-width: none; }
 .panel-center { margin: 0 auto; text-align: center; }
 
+/* ===== 3D SPATIAL LAYOUT =====
+   Each content block is treated as a physical object floating in the same
+   space as the sculpture. As you scroll, the camera "flies past" it: it
+   arrives from deep space, swings round to face you at reading position, then
+   turns away and recedes (driven by a scroll-scrubbed timeline in JS). The
+   section supplies a perspective tuned to match the WebGL camera's FOV, and
+   the whole field parallaxes in depth with the pointer (--mx/--my). */
+.sc3d { perspective: 1120px; perspective-origin: 50% 46%; }
+.sc3d .wrap.wr3d {
+  transform-style: preserve-3d;
+  transform:
+    translate3d(calc(var(--mx, 0) * 26px), calc(var(--my, 0) * -18px), 0)
+    rotateY(calc(var(--mx, 0) * 6deg))
+    rotateX(calc(var(--my, 0) * -4.5deg));
+  transition: transform .3s cubic-bezier(.16,1,.3,1);
+  will-change: transform;
+}
+/* the object itself — its fly-through transform is owned by JS (GSAP scrub) */
+.sc3d .panel, .sc3d .float-q {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity, filter;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 60px 120px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12);
+}
+/* a back-plate sitting behind the glass gives the panel real thickness when it
+   turns in space (edge catches the light as it rotates past) */
+.sc3d .panel::after, .sc3d .float-q::after {
+  content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+  transform: translateZ(-38px);
+  background: linear-gradient(160deg, rgba(24,17,26,0.5), rgba(8,6,10,0.62));
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+}
+@media (max-width: 767px) {
+  .sc3d { perspective: 820px; }
+  .sc3d .panel::after, .sc3d .float-q::after { transform: translateZ(-22px); }
+}
+
 .lbl {
   font-family: var(--fu); font-size: .62rem; font-weight: 400; letter-spacing: .24em;
   text-transform: uppercase; color: var(--amber);
@@ -979,7 +1017,7 @@ scene.background = new THREE.Color(0x070508);
 scene.fog = new THREE.FogExp2(0x070508, 0.115);
 
 const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.1, 60);
-camera.position.set(0, 1.35, 4.6);
+camera.position.set(0, 1.35, 5.4);
 
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.06).texture;
@@ -1152,7 +1190,7 @@ new GLTFLoader().load('ape.glb',
 /* ---------- CAMERA CHOREOGRAPHY (scroll-scrubbed proxy) ----------
    Front-hemisphere only: yaw ±0.55 rad, gentle rise/fall, dolly 3.4–6.2.
    The flat cut of the bust stays buried in fog; no rear/underside angles. */
-const shot = { yaw: 0, height: 1.75, dist: 4.4, lookY: 1.62, rot: 0, fogD: 0.115, ember: 1, keyI: 60, cyanI: 24, violetI: 20, exposure: 1.02 };
+const shot = { yaw: 0, height: 1.75, dist: 5.2, lookY: 1.62, rot: 0, fogD: 0.115, ember: 1, keyI: 60, cyanI: 24, violetI: 20, exposure: 1.02 };
 const look = new THREE.Vector3();
 
 function buildTimeline() {
@@ -1161,23 +1199,25 @@ function buildTimeline() {
     scrollTrigger: { trigger: '#ui', start: 'top top', end: 'bottom bottom', scrub: 1 }
   });
   // hero: dramatic push-in to a tight portrait
-  tl.to(shot, { yaw: 0.14, height: 1.72, dist: 3.1, lookY: 1.62, rot: 0.08, duration: 1 }, 0)
+  tl.to(shot, { yaw: 0.14, height: 1.72, dist: 3.7, lookY: 1.62, rot: 0.08, duration: 1 }, 0)
   // about: sweeping pan left + low angle
-    .to(shot, { yaw: -0.85, height: 1.1, dist: 3.5, lookY: 1.5, rot: 0.3, fogD: 0.13, duration: 1 }, 1)
+    .to(shot, { yaw: -0.85, height: 1.1, dist: 4.15, lookY: 1.5, rot: 0.3, fogD: 0.13, duration: 1 }, 1)
   // quote 1 → systems: crane up high and over
-    .to(shot, { yaw: -0.25, height: 2.7, dist: 4.2, lookY: 1.7, rot: 0.1, fogD: 0.115, duration: 1 }, 2)
+    .to(shot, { yaw: -0.25, height: 2.7, dist: 4.95, lookY: 1.7, rot: 0.1, fogD: 0.115, duration: 1 }, 2)
   // build: big pull-back, projects float in, lighting cools
-    .to(shot, { yaw: 0.3, height: 1.75, dist: 6.6, lookY: 1.3, rot: -0.15, cyanI: 38, keyI: 42, ember: 1.7, duration: 1 }, 3)
+    .to(shot, { yaw: 0.3, height: 1.75, dist: 7.6, lookY: 1.3, rot: -0.15, cyanI: 38, keyI: 42, ember: 1.7, duration: 1 }, 3)
   // quote 2 → principles: dive back in from the right, warm key returns
-    .to(shot, { yaw: 0.85, height: 1.25, dist: 3.3, lookY: 1.55, rot: -0.35, keyI: 70, violetI: 28, fogD: 0.125, duration: 1 }, 4)
+    .to(shot, { yaw: 0.85, height: 1.25, dist: 3.95, lookY: 1.55, rot: -0.35, keyI: 70, violetI: 28, fogD: 0.125, duration: 1 }, 4)
   // wandering → writing: rise and drift left, denser particles
-    .to(shot, { yaw: -0.45, height: 2.3, dist: 4.8, lookY: 1.5, rot: 0.18, ember: 2.2, cyanI: 30, duration: 1 }, 5)
+    .to(shot, { yaw: -0.45, height: 2.3, dist: 5.6, lookY: 1.5, rot: 0.18, ember: 2.2, cyanI: 30, duration: 1 }, 5)
   // contact: slow monumental pull-out
-    .to(shot, { yaw: 0, height: 2.1, dist: 6.4, lookY: 1.35, rot: 0, fogD: 0.1, keyI: 74, exposure: 1.22, duration: 1 }, 6);
+    .to(shot, { yaw: 0, height: 2.1, dist: 7.4, lookY: 1.35, rot: 0, fogD: 0.1, keyI: 74, exposure: 1.22, duration: 1 }, 6);
 }
 
 /* ---------- MOUSE ---------- */
 const mouse = { x: 0, y: 0, sx: 0, sy: 0 };
+const root = document.documentElement;
+let lastVarX = 0, lastVarY = 0;
 addEventListener('pointermove', e => {
   mouse.x = (e.clientX / innerWidth) * 2 - 1;
   mouse.y = (e.clientY / innerHeight) * 2 - 1;
@@ -1194,6 +1234,14 @@ function tick() {
   // eased mouse
   mouse.sx += (mouse.x - mouse.sx) * 0.04;
   mouse.sy += (mouse.y - mouse.sy) * 0.04;
+
+  // share the eased pointer with the DOM so the tilted content planes
+  // parallax in lock-step with the camera (both orbit the same center)
+  if (Math.abs(mouse.sx - lastVarX) > 0.002 || Math.abs(mouse.sy - lastVarY) > 0.002) {
+    root.style.setProperty('--mx', mouse.sx.toFixed(3));
+    root.style.setProperty('--my', mouse.sy.toFixed(3));
+    lastVarX = mouse.sx; lastVarY = mouse.sy;
+  }
 
   // camera: cinematic orbit, always front hemisphere, sculpture centered
   const yaw = shot.yaw + mouse.sx * 0.11;
@@ -1278,8 +1326,8 @@ function beginExperience() {
   buildTimeline();
 
   // cinematic dolly-in from the void: far, dark, then the light comes up
-  shot.dist = 10; shot.height = 2.9; shot.exposure = 0.5;
-  gsap.to(shot, { dist: 4.4, height: 1.75, duration: 3, ease: 'power3.out', delay: 0.35, overwrite: false });
+  shot.dist = 11.5; shot.height = 2.9; shot.exposure = 0.5;
+  gsap.to(shot, { dist: 5.2, height: 1.75, duration: 3, ease: 'power3.out', delay: 0.35, overwrite: false });
   gsap.to(shot, { exposure: 1.02, duration: 3.4, ease: 'power2.inOut', delay: 0.5, overwrite: false });
 
   ldFill.style.width = '100%';
@@ -1292,11 +1340,33 @@ function beginExperience() {
     ScrollTrigger.refresh();
   }, 450);
 
-  // panel + element reveals (cinematic: blur + rise + slight rotation)
+  // --- content that lives in the sculpture's 3D space -------------------------
+  // Each block is an object the camera flies past: it arrives from deep space
+  // (rotated, dim, blurred by distance), swings round to face you flat at
+  // reading position (progress ~0.5, dead-centre of its section), then turns
+  // away and recedes as you scroll on. Scrubbed to scroll, so it's continuous
+  // 3D motion — not a reveal that stops.
+  document.querySelectorAll('.sc3d .panel, .sc3d .float-q').forEach(p => {
+    const wrap = p.closest('.wr3d');
+    const flat = wrap && wrap.classList.contains('flat');
+    const dir = flat ? 0 : (wrap && wrap.classList.contains('face-r') ? -1 : 1);  // left = +1
+    const A = isMobile
+      ? { z0: -360, y0: 70,  x0: 0,       ryE: 18 * dir, rxE: 5,  zE: -240, yE: -60,  xE: 0,        ryX: -12 * dir, rxX: -4, bIn: '', dim: 0.42 }
+      : { z0: -660, y0: 110, x0: 78 * dir, ryE: 38 * dir, rxE: 11, zE: -430, yE: -100, xE: -42 * dir, ryX: -26 * dir, rxX: -9, bIn: 'blur(9px) ', dim: 0.2 };
+    gsap.timeline({ scrollTrigger: { trigger: p, start: 'top bottom', end: 'bottom top', scrub: 0.6 } })
+      .fromTo(p,
+        { z: A.z0, y: A.y0, x: A.x0, rotateY: A.ryE, rotateX: A.rxE, opacity: A.dim, filter: A.bIn + 'brightness(0.45)' },
+        { z: 0, y: 0, x: 0, rotateY: 0, rotateX: 0, opacity: 1, filter: (isMobile ? '' : 'blur(0px) ') + 'brightness(1)', ease: 'power2.out', duration: 0.5 })
+      .to(p,
+        { z: A.zE, y: A.yE, x: A.xE, rotateY: A.ryX, rotateX: A.rxX, opacity: A.dim + 0.1, filter: A.bIn + 'brightness(0.45)', ease: 'power2.in', duration: 0.5 });
+  });
+
+  // simple reveal for content outside the 3D field (the Apps carousel panel)
   document.querySelectorAll('.panel, .float-q').forEach(p => {
+    if (p.closest('.sc3d')) return;
     gsap.fromTo(p,
-      { opacity: 0, y: 70, rotateX: 6, filter: 'blur(14px)' },
-      { opacity: 1, y: 0, rotateX: 0, filter: 'blur(0px)', duration: 1.4, ease: 'power3.out',
+      { opacity: 0, y: 60, filter: 'blur(10px)' },
+      { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1.2, ease: 'power3.out',
         scrollTrigger: { trigger: p, start: 'top 82%', toggleActions: 'play none none reverse' } });
   });
   document.querySelectorAll('.panel .rv, .float-q.rv').forEach(el => {
@@ -1320,6 +1390,25 @@ if (reduce) {
 <script>
 const isFine = window.matchMedia('(pointer: fine)').matches;
 const isMobileUA = window.matchMedia('(max-width: 767px)').matches;
+const reduceUI = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ===== 3D SPATIAL LAYOUT — arrange content on tilted planes around the model =====
+   Each content section becomes a perspective stage; its wrap tilts toward the
+   central sculpture (left panels face right, right panels face left) and
+   parallaxes with the pointer via the shared --mx/--my vars. Build (its own
+   3D carousel) and the sticky hero are left untouched. */
+if (!reduceUI) {
+  const sel = '#about, #systems, #principles, #wandering, #writing, #contact, .quote-scene';
+  document.querySelectorAll(sel).forEach(sc => {
+    const wrap = sc.querySelector('.wrap');
+    if (!wrap) return;
+    sc.classList.add('sc3d');
+    wrap.classList.add('wr3d');
+    if (sc.querySelector('.panel-l, .float-q.panel-l')) wrap.classList.add('face-l');
+    else if (sc.querySelector('.panel-r, .float-q.panel-r')) wrap.classList.add('face-r');
+    else wrap.classList.add('flat');           // centered / wide content: depth only
+  });
+}
 
 /* ===== CURSOR ===== */
 const cur = document.getElementById('cur');

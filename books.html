@@ -83,19 +83,6 @@ body {
   opacity: 0; transition: opacity 1.4s ease;
 }
 #statue.on { opacity: 1; }
-/* the corner companion — rides along in the bottom-right, then bows out
-   when the author portrait takes the stage */
-#buddy {
-  position: fixed; right: clamp(6px, 2vw, 30px); bottom: -2px; z-index: 70;
-  width: min(34vw, 350px); height: min(40vw, 400px);
-  pointer-events: none; opacity: 0;
-  transform: translateY(112%);
-  transition: transform 1s var(--ease), opacity .5s ease .1s;
-  filter: drop-shadow(0 18px 30px rgba(80,46,16,0.35));
-}
-#buddy.in { opacity: 1; transform: translateY(10%); }
-#buddy.away { opacity: 1; transform: translateY(118%) rotate(8deg); transition: transform .85s cubic-bezier(.5,0,.75,0), opacity .4s ease .5s; }
-@media (max-width: 767px) { #buddy { width: 52vw; height: 62vw; right: 0; } }
 #water { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 60; pointer-events: none; mix-blend-mode: screen; opacity: .5; }
 
 /* ===== LAYOUT ===== */
@@ -333,7 +320,6 @@ window.scrollTo(0, 0);
 <div class="bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
 <canvas id="dust"></canvas>
 <canvas id="water"></canvas>
-<canvas id="buddy" aria-hidden="true"></canvas>
 
 <!-- DRAWER -->
 <div class="drawer" id="drawer">
@@ -897,34 +883,6 @@ if (statueCv) {
     }));
     scene.add(motes);
 
-    /* --- corner companion: its own tiny stage, same sculpture --- */
-    const buddyCv = document.getElementById('buddy');
-    let bScene = null, bCam = null, bRenderer = null, bModel = null, buddyOK = false;
-    if (buddyCv) {
-      bRenderer = new THREE.WebGLRenderer({ canvas: buddyCv, alpha: true, antialias: true });
-      bRenderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-      bRenderer.toneMapping = THREE.ACESFilmicToneMapping;
-      bRenderer.outputColorSpace = THREE.SRGBColorSpace;
-      bScene = new THREE.Scene();
-      bCam = new THREE.PerspectiveCamera(32, 1, 0.1, 30);
-      bCam.position.set(0, 1.85, 4.4);                 // wide margins — shoulders stay inside even mid-turn
-      bCam.lookAt(0, 1.52, 0);
-      bScene.add(new THREE.HemisphereLight(0xfff4e2, 0xc4783c, 1.5));
-      const bKey = new THREE.DirectionalLight(0xffe0b8, 2.8); bKey.position.set(-2.5, 3.5, 3);
-      const bRim = new THREE.PointLight(0xe09050, 12, 10, 2); bRim.position.set(2.2, 2.4, -1.6);
-      bScene.add(bKey, bRim);
-      bModel = new THREE.Group();
-      bScene.add(bModel);
-      function bSize() {
-        const w = buddyCv.clientWidth || 240, h = buddyCv.clientHeight || 300;
-        bRenderer.setSize(w, h, false);
-        bCam.aspect = w / h;
-        bCam.position.z = bCam.aspect < 0.92 ? 5.1 : 4.4;   // narrow (phone) canvas → step back further
-        bCam.updateProjectionMatrix();
-      }
-      bSize(); addEventListener('resize', bSize);
-    }
-
     const model = new THREE.Group();
     scene.add(model);
     let bust = null;
@@ -942,21 +900,7 @@ if (statueCv) {
       model.add(bust);
       model.rotation.y = -0.22;                       // angled toward the author's own words
       statueCv.classList.add('on');
-      // clone into the corner stage (materials shared — cheap)
-      if (bModel) {
-        bModel.add(bust.clone(true));
-        buddyOK = true;
-        setTimeout(() => buddyCv.classList.add('in'), 600);   // slides up after the page settles
-      }
     });
-
-    // the companion bows out while the author portrait is on stage
-    const authorSec = document.getElementById('author');
-    if (buddyCv && authorSec) {
-      new IntersectionObserver(es => es.forEach(e => {
-        buddyCv.classList.toggle('away', e.isIntersecting);
-      }), { threshold: 0.18 }).observe(authorSec);
-    }
 
     const coarse = window.matchMedia('(pointer: coarse)').matches;
     const mouse = { x: 0, y: 0, sx: 0, sy: 0 };
@@ -1032,44 +976,6 @@ if (statueCv) {
       }
       pa.needsUpdate = true;
       renderer.render(scene, camera);
-    })();
-
-    /* companion loop — follows the cursor around the page like a desk pet;
-       with no cursor (touch), he glances around the room on his own */
-    const bMouse = { tx: 0, ty: 0, x: 0, y: 0 };
-    let lastPointer = -10;
-    function aimBuddy(cx, cy) {
-      if (!buddyCv) return;
-      lastPointer = performance.now() / 1000;
-      const r = buddyCv.getBoundingClientRect();
-      const dx = cx - (r.left + r.width / 2);
-      const dy = cy - (r.top + r.height * 0.35);             // eye level, not canvas centre
-      bMouse.tx = Math.max(-0.85, Math.min(0.85, dx / innerWidth * 2.6));
-      bMouse.ty = Math.max(-0.55, Math.min(0.18, dy / innerHeight * 1.4));   // generous upward range, tight downward
-    }
-    addEventListener('pointermove', e => aimBuddy(e.clientX, e.clientY));
-    addEventListener('pointerdown', e => aimBuddy(e.clientX, e.clientY), { passive: true });
-    const bClock = new THREE.Clock();
-    (function buddyLoop() {
-      if (!bRenderer) return;
-      requestAnimationFrame(buddyLoop);
-      if (!buddyOK || buddyCv.classList.contains('away')) return;
-      const t = bClock.getElapsedTime();
-      if (!reduceS) {
-        // idle wander: no pointer activity for a while → look around on his own
-        if (performance.now() / 1000 - lastPointer > 3) {
-          bMouse.tx = Math.sin(t * 0.26) * 0.45 + Math.sin(t * 0.71) * 0.12;
-          bMouse.ty = -0.12 + Math.sin(t * 0.19) * 0.14;
-        }
-        bMouse.x += (bMouse.tx - bMouse.x) * 0.08;
-        bMouse.y += (bMouse.ty - bMouse.y) * 0.08;
-        bModel.rotation.y = bMouse.x + Math.sin(t * 0.6) * 0.03;
-        bModel.rotation.x = bMouse.y * 0.8;                  // tilts up to follow a high cursor
-        bModel.rotation.z = bMouse.x * -0.05;                // tiny head-cock toward the cursor
-        // rises a little when looking up — never enough to expose the cut base
-        bModel.position.y = Math.sin(t * 1.1) * 0.02 + Math.max(0, -bMouse.y) * 0.16;
-      }
-      bRenderer.render(bScene, bCam);
     })();
   } catch (err) { /* WebGL unavailable — the library reads fine without its statue */ }
 }

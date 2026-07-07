@@ -216,6 +216,11 @@ body.ready nav { animation: navdrop .8s .3s var(--ease) forwards; }
     rotateX(calc(var(--my, 0) * -4.5deg));
   transition: transform .3s cubic-bezier(.16,1,.3,1);
   will-change: transform;
+  /* preserve-3d stacks by Z, not DOM order — the panel spends most of the
+     fly-through at negative Z, so the wrap's own (invisible) box would float
+     in front and eat clicks. Make the wrap transparent to the pointer and let
+     the actual content receive events. */
+  pointer-events: none;
 }
 /* the object itself — its fly-through transform is owned by JS (GSAP scrub) */
 .sc3d .panel, .sc3d .float-q {
@@ -223,11 +228,13 @@ body.ready nav { animation: navdrop .8s .3s var(--ease) forwards; }
   backface-visibility: hidden;
   will-change: transform, opacity, filter;
   box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 60px 120px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12);
+  pointer-events: auto;
 }
 /* a back-plate sitting behind the glass gives the panel real thickness when it
    turns in space (edge catches the light as it rotates past) */
 .sc3d .panel::after, .sc3d .float-q::after {
   content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+  pointer-events: none;
   transform: translateZ(-38px);
   background: linear-gradient(160deg, rgba(24,17,26,0.5), rgba(8,6,10,0.62));
   border: 1px solid rgba(255,255,255,0.06);

@@ -1,0 +1,218 @@
+/* =====================================================================
+   dio.stesso — UKIYO-E  ·  "Views of dio.stesso"
+   Shared woodblock system for index.html + books.html
+   Grammar: washi paper, flat pigment blocks slightly out of register,
+   sumi key line, bokashi skies, cartouches + red seals. Prints are still;
+   one or two small actions per view. Things *print in*, never fade-and-float.
+   ===================================================================== */
+:root{
+  --washi:#F2E8D5; --washi-2:#EADCC0; --washi-3:#E0CFAE; --mount:#C9B38A;
+  --sumi:#1C1916; --sumi-2:#39332C; --sumi-soft:#6A6052; --sumi-faint:rgba(28,25,22,.14);
+  --ai:#1E3A5F; --ai-2:#3F6688; --ai-pale:#A7BFD0;
+  --beni:#B5382B; --beni-2:#D2533E; --ochre:#C4963F; --moss:#6E7D57;
+  --night:#11161F; --night-2:#1A2230;
+  --f-disp:'Shippori Mincho','Tiro Devanagari Hindi',Georgia,serif;
+  --f-brush:'Yuji Syuku','Shippori Mincho',serif;
+  --f-ui:'Zen Kaku Gothic New','Tiro Devanagari Hindi',system-ui,sans-serif;
+  --f-deva:'Tiro Devanagari Hindi','Shippori Mincho',serif;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --ease-print:cubic-bezier(.65,0,.25,1);
+  --maxw:1240px;
+  --paper-tex:none;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  background-color:var(--washi);
+  background-image:var(--paper-tex);
+  background-size:420px 420px;
+  color:var(--sumi);font-family:var(--f-disp);font-size:17px;line-height:1.65;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+::selection{background:var(--beni);color:var(--washi)}
+a{color:inherit}
+img,video,canvas{display:block;max-width:100%;height:auto}
+html,body{overflow-x:clip}
+button{font:inherit;color:inherit}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+:focus-visible{outline:2px solid var(--beni);outline-offset:3px}
+
+/* edge ageing of the whole sheet */
+.age{position:fixed;inset:0;z-index:90;pointer-events:none;
+  box-shadow:inset 0 0 160px rgba(120,90,40,.20),inset 0 0 40px rgba(120,90,40,.12)}
+
+/* ---------------------------------------------------------------
+   type
+---------------------------------------------------------------- */
+.eyebrow{font-family:var(--f-ui);font-weight:500;font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;color:var(--beni);display:inline-flex;align-items:center;gap:12px}
+.eyebrow::before{content:'';width:28px;height:1.5px;background:currentColor}
+.h-sec{font-family:var(--f-disp);font-weight:800;font-size:clamp(2.2rem,5.6vw,4.6rem);line-height:1;letter-spacing:-.01em;margin:16px 0 18px}
+.h-sec em{font-style:normal;color:var(--beni)}
+.lede{font-size:clamp(1rem,1.3vw,1.14rem);color:var(--sumi-2);max-width:56ch}
+.brush{font-family:var(--f-brush)}
+.deva{font-family:var(--f-deva)}
+.muted{color:var(--sumi-soft)}
+
+/* ---------------------------------------------------------------
+   seal (hanko) — red, chipped, stamps in
+---------------------------------------------------------------- */
+.seal{
+  --s:46px;width:var(--s);height:var(--s);flex:0 0 var(--s);
+  display:inline-grid;place-items:center;background:var(--beni);color:var(--washi);
+  font-family:var(--f-brush);font-size:calc(var(--s)*.46);line-height:1;
+  clip-path:polygon(3% 6%,22% 2%,40% 5%,61% 1%,83% 4%,98% 2%,96% 24%,99% 47%,95% 70%,98% 96%,76% 98%,55% 95%,31% 99%,8% 96%,2% 78%,5% 52%,1% 30%);
+  filter:url(#rough);position:relative;
+}
+.seal.sq{writing-mode:vertical-rl;font-size:calc(var(--s)*.34);letter-spacing:-.05em}
+.seal.ghost{background:transparent;color:var(--beni);box-shadow:inset 0 0 0 2.5px var(--beni)}
+.stamp{transform:scale(1.35) rotate(-6deg);opacity:0}
+.on .stamp,.stamp.on{animation:stamp .26s var(--ease) forwards;animation-delay:var(--sd,.45s)}
+@keyframes stamp{0%{transform:scale(1.35) rotate(-6deg);opacity:0}60%{opacity:1}100%{transform:scale(1) rotate(-3deg);opacity:1}}
+
+/* ---------------------------------------------------------------
+   cartouches
+---------------------------------------------------------------- */
+.cart{background:#F7EFDF;border:2.5px solid var(--sumi);box-shadow:inset 0 0 0 3px #F7EFDF,inset 0 0 0 4px var(--sumi);padding:14px 12px;position:relative}
+.cart-v{writing-mode:vertical-rl;text-orientation:mixed;display:inline-flex;align-items:center;gap:10px}
+.cart-tab{font-family:var(--f-ui);font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;background:var(--ai-pale);color:var(--sumi);padding:6px 3px}
+
+/* ---------------------------------------------------------------
+   the printed sheet (thick + thin key border on washi)
+---------------------------------------------------------------- */
+.sheet{position:relative;background:var(--washi);background-image:var(--paper-tex);background-size:420px;
+  border:3px solid var(--sumi);box-shadow:inset 0 0 0 7px var(--washi),inset 0 0 0 8.5px var(--sumi),0 30px 60px -34px rgba(60,40,15,.55)}
+.sheet-in{position:absolute;inset:14px;overflow:hidden}
+
+/* ---------------------------------------------------------------
+   PRINTING REVEAL — a diagonal baren sweep, landing into register
+---------------------------------------------------------------- */
+.pr{
+  -webkit-mask-image:linear-gradient(110deg,#000 40%,rgba(0,0,0,.55) 47%,transparent 55%);
+          mask-image:linear-gradient(110deg,#000 40%,rgba(0,0,0,.55) 47%,transparent 55%);
+  -webkit-mask-size:260% 100%;mask-size:260% 100%;
+  -webkit-mask-position:100% 0;mask-position:100% 0;
+  transform:translate(var(--rx,5px),var(--ry,-4px));
+  transition:-webkit-mask-position .9s var(--ease-print),mask-position .9s var(--ease-print),transform .5s var(--ease) .55s;
+  transition-delay:var(--pd,0s),var(--pd,0s),calc(var(--pd,0s) + .55s);
+}
+.on .pr,.pr.on{-webkit-mask-position:0 0;mask-position:0 0;transform:translate(0,0)}
+
+/* simple rise for text */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .9s var(--ease),transform .9s var(--ease);transition-delay:var(--d,0s)}
+.rv.on{opacity:1;transform:none}
+
+/* ---------------------------------------------------------------
+   buttons
+---------------------------------------------------------------- */
+.btn{position:relative;display:inline-flex;align-items:center;gap:12px;text-decoration:none;cursor:pointer;
+  font-family:var(--f-ui);font-weight:500;font-size:.82rem;letter-spacing:.16em;text-transform:uppercase;
+  padding:15px 24px;border:2px solid var(--sumi);background:transparent;color:var(--sumi);overflow:hidden;isolation:isolate;
+  transition:color .35s var(--ease)}
+.btn::before{content:'';position:absolute;inset:-2px;z-index:-1;background:var(--sumi);transform:translateX(-102%) skewX(-12deg);transition:transform .45s var(--ease-print)}
+.btn:hover{color:var(--washi)}
+.btn:hover::before{transform:translateX(0) skewX(0)}
+.btn .ar{transition:transform .35s var(--ease)}
+.btn:hover .ar{transform:translateX(5px)}
+.btn.red{background:var(--beni);border-color:var(--beni);color:var(--washi)}
+.btn.red::before{background:var(--sumi)}
+.btn.ghost-light{border-color:var(--washi);color:var(--washi)}
+.btn.ghost-light::before{background:var(--washi)}
+.btn.ghost-light:hover{color:var(--sumi)}
+
+/* ---------------------------------------------------------------
+   NAV
+---------------------------------------------------------------- */
+.nav{position:fixed;top:0;left:0;right:0;z-index:80;transition:transform .5s var(--ease),background .4s}
+.nav.stuck{background:rgba(242,232,213,.9);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 1px 0 var(--sumi-faint)}
+.nav.hide{transform:translateY(-100%)}
+.nav-in{max-width:var(--maxw);margin:0 auto;padding:14px 26px;display:flex;align-items:center;gap:20px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--f-disp);font-weight:800;font-size:1.25rem;letter-spacing:-.01em}
+.logo .seal{--s:30px;font-size:.72rem;letter-spacing:-.02em}
+.logo .dot{color:var(--beni)}
+.logo>span:last-child{white-space:nowrap}
+.nav-links{list-style:none;display:flex;gap:2px;margin-left:auto}
+.nav-links a{display:block;font-family:var(--f-ui);font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;padding:10px 13px;position:relative;color:var(--sumi-2)}
+.nav-links a::after{content:'';position:absolute;left:13px;right:13px;bottom:5px;height:2px;background:var(--beni);transform:scaleX(0);transform-origin:right;transition:transform .4s var(--ease)}
+.nav-links a:hover::after,.nav-links a.act::after{transform:scaleX(1);transform-origin:left}
+.nav-links a.ura{color:var(--beni);font-family:var(--f-brush);letter-spacing:.05em;font-size:1rem;text-transform:none;padding-top:7px}
+.burger{display:none;margin-left:auto;background:none;border:0;width:44px;height:44px;cursor:pointer;position:relative}
+.burger span{position:absolute;left:10px;right:10px;height:2px;background:var(--sumi);transition:.35s var(--ease)}
+.burger span:nth-child(1){top:16px}.burger span:nth-child(2){top:26px;right:18px}
+.burger.open span:nth-child(1){top:21px;transform:rotate(45deg)}
+.burger.open span:nth-child(2){top:21px;right:10px;transform:rotate(-45deg)}
+.drawer{position:fixed;inset:0;z-index:79;background:var(--washi);background-image:var(--paper-tex);padding:100px 30px 40px;display:flex;flex-direction:column;
+  clip-path:inset(0 0 100% 0);transition:clip-path .7s var(--ease-print);visibility:hidden}
+.drawer.open{clip-path:inset(0 0 0 0);visibility:visible}
+.drawer a{font-family:var(--f-disp);font-weight:700;font-size:2rem;text-decoration:none;padding:12px 0;border-bottom:1px solid var(--sumi-faint);display:flex;justify-content:space-between;align-items:baseline}
+.drawer a small{font-family:var(--f-ui);font-size:.7rem;letter-spacing:.2em;color:var(--beni)}
+
+/* scroll rod — handscroll progress */
+.rod{position:fixed;left:0;top:0;height:3px;width:100%;z-index:85;pointer-events:none;transform-origin:left;transform:scaleX(0);background:var(--beni)}
+
+/* falling petals canvas */
+#petals{position:fixed;inset:0;z-index:70;pointer-events:none}
+
+/* ---------------------------------------------------------------
+   seigaiha band (waves)
+---------------------------------------------------------------- */
+.seigaiha{height:70px;background-color:var(--ai);
+  background-image:radial-gradient(circle at 50% 100%,transparent 9px,var(--ai-pale) 10px,var(--ai-pale) 12px,transparent 13px,transparent 17px,var(--ai-pale) 18px,var(--ai-pale) 20px,transparent 21px,transparent 25px,var(--washi) 26px,var(--washi) 28px,var(--ai) 29px);
+  background-size:60px 30px;animation:waves 14s linear infinite}
+.seigaiha.thin{height:34px}
+@keyframes waves{to{background-position:60px 0}}
+
+/* marquee scroll text */
+.ticker{overflow:hidden;border-block:2px solid var(--sumi);background:var(--washi-2);padding:14px 0;white-space:nowrap}
+.ticker-in{display:inline-flex;gap:46px;animation:tick 48s linear infinite;font-family:var(--f-disp);font-weight:700;font-size:clamp(1.1rem,2vw,1.5rem)}
+.ticker-in span{display:inline-flex;align-items:center;gap:46px}
+.ticker-in span::after{content:'';width:9px;height:9px;background:var(--beni);transform:rotate(45deg)}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+/* ---------------------------------------------------------------
+   modal / lightbox shell
+---------------------------------------------------------------- */
+.modal{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;padding:18px;visibility:hidden;pointer-events:none}
+.modal.open{visibility:visible;pointer-events:auto}
+.modal-bd{position:absolute;inset:0;background:rgba(17,22,31,.72);opacity:0;transition:opacity .4s}
+.modal.open .modal-bd{opacity:1}
+.modal-panel{position:relative;width:100%;max-width:860px;max-height:94vh;overflow:auto;background:var(--washi);background-image:var(--paper-tex);
+  border:3px solid var(--sumi);box-shadow:inset 0 0 0 6px var(--washi),inset 0 0 0 7.5px var(--sumi),0 40px 80px -30px #000;
+  clip-path:inset(0 100% 0 0);transition:clip-path .6s var(--ease-print)}
+.modal.open .modal-panel{clip-path:inset(0 0 0 0)}
+.modal-x{position:absolute;top:14px;right:14px;z-index:3;width:44px;height:44px;border:2px solid var(--sumi);background:var(--washi);font-size:1.4rem;line-height:1;cursor:pointer;transition:background .25s,color .25s}
+.modal-x:hover{background:var(--beni);border-color:var(--beni);color:var(--washi)}
+
+/* ---------------------------------------------------------------
+   footer
+---------------------------------------------------------------- */
+.foot{position:relative;background:var(--sumi);color:var(--washi);padding:70px 26px 54px;text-align:center;overflow:hidden}
+.foot .logo{justify-content:center;color:var(--washi);font-size:1.8rem}
+.foot p{font-family:var(--f-ui);font-size:.78rem;letter-spacing:.14em;color:rgba(242,232,213,.6);margin-top:12px}
+.foot .tally{margin-top:26px;font-family:var(--f-ui);font-size:.68rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(242,232,213,.38)}
+.foot .tally b{color:var(--beni-2);font-weight:500}
+
+
+/* typographic hygiene — no orphans, no ugly breaks */
+h1,h2,h3,h4,.pull,.q,.lede,.slip,.ura-foot p{text-wrap:balance}
+p,li,figcaption{text-wrap:pretty}
+a[href^="mailto:"],.eyebrow,.btn,.cart-tab,.seal{overflow-wrap:normal;word-break:normal}
+.btn{white-space:nowrap}
+
+/* ---------------------------------------------------------------
+   responsive
+---------------------------------------------------------------- */
+@media(max-width:520px){
+  .eyebrow{letter-spacing:.2em;font-size:.64rem;gap:9px}
+  .eyebrow::before{width:18px}
+}
+@media(max-width:960px){
+  .nav-links{display:none}
+  .burger{display:block}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  .rv{opacity:1;transform:none}
+  .pr{-webkit-mask:none;mask:none;transform:none}
+  .stamp{opacity:1;transform:rotate(-3deg)}
+  #petals{display:none}
+}

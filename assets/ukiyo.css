@@ -6,6 +6,7 @@
    one or two small actions per view. Things *print in*, never fade-and-float.
    ===================================================================== */
 :root{
+  color-scheme:only light;
   --washi:#F2E8D5; --washi-2:#EADCC0; --washi-3:#E0CFAE; --mount:#C9B38A;
   --sumi:#1C1916; --sumi-2:#39332C; --sumi-soft:#6A6052; --sumi-faint:rgba(28,25,22,.14);
   --ai:#1E3A5F; --ai-2:#3F6688; --ai-pale:#A7BFD0;
@@ -21,7 +22,7 @@
   --paper-tex:none;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;color-scheme:only light;background:#F2E8D5}
 body{
   background-color:var(--washi);
   background-image:var(--paper-tex);
@@ -58,13 +59,16 @@ button{font:inherit;color:inherit}
 ---------------------------------------------------------------- */
 .seal{
   --s:46px;width:var(--s);height:var(--s);flex:0 0 var(--s);
-  display:inline-grid;place-items:center;background:var(--beni);color:var(--washi);
-  font-family:var(--f-brush);font-size:calc(var(--s)*.46);line-height:1;
-  clip-path:polygon(3% 6%,22% 2%,40% 5%,61% 1%,83% 4%,98% 2%,96% 24%,99% 47%,95% 70%,98% 96%,76% 98%,55% 95%,31% 99%,8% 96%,2% 78%,5% 52%,1% 30%);
-  filter:url(#rough);position:relative;
+  display:inline-grid;place-items:center;color:var(--washi);
+  font-family:var(--f-disp);font-weight:800;font-size:calc(var(--s)*.44);line-height:1;letter-spacing:-.02em;
+  position:relative;isolation:isolate;
 }
+.seal::before{content:'';position:absolute;inset:0;z-index:-1;background:var(--beni);
+  clip-path:polygon(3% 6%,22% 2%,40% 5%,61% 1%,83% 4%,98% 2%,96% 24%,99% 47%,95% 70%,98% 96%,76% 98%,55% 95%,31% 99%,8% 96%,2% 78%,5% 52%,1% 30%);
+  filter:url(#rough)}
 .seal.sq{writing-mode:vertical-rl;font-size:calc(var(--s)*.34);letter-spacing:-.05em}
-.seal.ghost{background:transparent;color:var(--beni);box-shadow:inset 0 0 0 2.5px var(--beni)}
+.seal.ghost{color:var(--beni)}
+.seal.ghost::before{background:transparent;box-shadow:inset 0 0 0 2.5px var(--beni)}
 .stamp{transform:scale(1.35) rotate(-6deg);opacity:0}
 .on .stamp,.stamp.on{animation:stamp .26s var(--ease) forwards;animation-delay:var(--sd,.45s)}
 @keyframes stamp{0%{transform:scale(1.35) rotate(-6deg);opacity:0}60%{opacity:1}100%{transform:scale(1) rotate(-3deg);opacity:1}}
@@ -134,7 +138,7 @@ button{font:inherit;color:inherit}
 .nav-links a{display:block;font-family:var(--f-ui);font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;padding:10px 13px;position:relative;color:var(--sumi-2)}
 .nav-links a::after{content:'';position:absolute;left:13px;right:13px;bottom:5px;height:2px;background:var(--beni);transform:scaleX(0);transform-origin:right;transition:transform .4s var(--ease)}
 .nav-links a:hover::after,.nav-links a.act::after{transform:scaleX(1);transform-origin:left}
-.nav-links a.ura{color:var(--beni);font-family:var(--f-brush);letter-spacing:.05em;font-size:1rem;text-transform:none;padding-top:7px}
+.nav-links a.ura{color:var(--beni);font-family:var(--f-disp);font-weight:800;letter-spacing:.05em;font-size:1rem;text-transform:none;padding-top:7px}
 .burger{display:none;margin-left:auto;background:none;border:0;width:44px;height:44px;cursor:pointer;position:relative}
 .burger span{position:absolute;left:10px;right:10px;height:2px;background:var(--sumi);transition:.35s var(--ease)}
 .burger span:nth-child(1){top:16px}.burger span:nth-child(2){top:26px;right:18px}
@@ -192,6 +196,23 @@ button{font:inherit;color:inherit}
 .foot .tally b{color:var(--beni-2);font-weight:500}
 
 
+/* ---------------------------------------------------------------
+   THE PRINT IS ALIVE — very slow, continuous, barely there
+   · pigment blocks breathe (ink density drifts, colour comes and goes)
+   · the camera lingers over every print (handscroll-slow push)
+   · monochrome thumbnails take on colour, then let it go
+---------------------------------------------------------------- */
+.blk.on{animation:breathe var(--bt,11s) ease-in-out infinite alternate;animation-delay:calc(var(--pd,0s) + 1.4s)}
+@keyframes breathe{0%{opacity:1}100%{opacity:var(--bo,.62)}}
+.sheet-in>.key,.sheet-in>.blk{scale:1;transform-origin:var(--kb,60% 45%);animation-name:breathe,linger;animation-duration:var(--bt,11s),38s;animation-timing-function:ease-in-out,ease-in-out;animation-iteration-count:infinite,infinite;animation-direction:alternate,alternate}
+.sheet-in>.key{animation:linger 38s ease-in-out infinite alternate}
+@keyframes linger{from{scale:1}to{scale:1.045}}
+.tint{animation:tint 16s ease-in-out infinite;animation-delay:var(--td,0s);animation-play-state:paused}
+.tint.live{animation-play-state:running}
+@keyframes tint{0%,100%{filter:grayscale(.92) sepia(.38) contrast(1.05)}50%{filter:grayscale(.25) sepia(.12) contrast(1.02)}}
+.age{animation:age 14s ease-in-out infinite alternate}
+@keyframes age{from{opacity:.85}to{opacity:1}}
+
 /* typographic hygiene — no orphans, no ugly breaks */
 h1,h2,h3,h4,.pull,.q,.lede,.slip,.ura-foot p{text-wrap:balance}
 p,li,figcaption{text-wrap:pretty}
@@ -209,10 +230,14 @@ a[href^="mailto:"],.eyebrow,.btn,.cart-tab,.seal{overflow-wrap:normal;word-break
   .nav-links{display:none}
   .burger{display:block}
 }
+@media(max-width:380px){
+  body .btn{font-size:.6rem;letter-spacing:.07em;padding:14px 6px;gap:6px}
+}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
   .rv{opacity:1;transform:none}
   .pr{-webkit-mask:none;mask:none;transform:none}
   .stamp{opacity:1;transform:rotate(-3deg)}
   #petals{display:none}
+  .blk,.key,.tint,.age{animation:none!important;scale:1!important}
 }

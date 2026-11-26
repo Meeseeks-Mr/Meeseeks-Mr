@@ -137,7 +137,8 @@ U.printBlocks = function(host, blocks, opt={}){
     const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
     cv.className = 'blk pr';
     const [ox, oy] = offs[i % offs.length];
-    cv.style.cssText = `position:absolute;inset:0;width:100%;height:100%;mix-blend-mode:multiply;--rx:${ox*3}px;--ry:${oy*3}px;--pd:${(opt.delay||0) + i*(opt.step ?? .32)}s;translate:${ox}px ${oy}px`;
+    const bt = (9 + Math.random()*7).toFixed(1), bo = (b.type === 'sun' ? .8 : .5 + Math.random()*.3).toFixed(2);
+    cv.style.cssText = `position:absolute;inset:0;width:100%;height:100%;mix-blend-mode:multiply;--rx:${ox*3}px;--ry:${oy*3}px;--pd:${(opt.delay||0) + i*(opt.step ?? .32)}s;translate:${ox}px ${oy}px;--bt:${bt}s;--bo:${bo};animation-delay:-${(Math.random()*8).toFixed(1)}s,0s`;
     drawBlock(cv, b, 101 + i*17 + (opt.seed||0));
     host.insertBefore(cv, host.querySelector('.key'));
     made.push(cv);
@@ -181,6 +182,15 @@ U.autoplay = function(sel){
     if(e.isIntersecting){ if(v.preload === 'none') v.preload = 'metadata'; v.play().catch(()=>{}); } else v.pause();
   }), {threshold:.35});
   document.querySelectorAll(sel).forEach(v => { if(!reduce) vio.observe(v); });
+};
+
+/* ---------- 7b. thumbnails that slowly take on colour, only while visible ---------- */
+U.tint = function(sel){
+  if(reduce) return;
+  const els = [...document.querySelectorAll(sel)];
+  els.forEach((el,i) => { el.classList.add('tint'); el.style.setProperty('--td', (-(i*3.7)%16).toFixed(1)+'s'); });
+  const tio = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('live', e.isIntersecting)), {rootMargin:'60px'});
+  els.forEach(el => tio.observe(el));
 };
 
 /* ---------- 8. gentle pointer drift on [data-drift] layers ---------- */

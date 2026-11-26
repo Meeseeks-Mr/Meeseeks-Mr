@@ -6,6 +6,7 @@
 <title>dio.stesso — the library</title>
 <meta name="description" content="Books by dio.stesso — on artificial intelligence, grammar, and Formula One. All five published, on Google Play.">
 <meta name="theme-color" content="#F2E8D5">
+<meta name="color-scheme" content="only light">
 <meta property="og:type" content="book">
 <meta property="og:site_name" content="dio.stesso">
 <meta property="og:title" content="dio.stesso — the library">
@@ -95,7 +96,7 @@ section{position:relative}
 .btag{font-family:var(--f-ui);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;padding:5px 10px;border:1.5px solid var(--sumi)}
 .btag:first-child{background:var(--ai);border-color:var(--ai);color:var(--washi)}
 .btitle{font-family:var(--f-disp);font-weight:800;font-size:clamp(1.6rem,2.8vw,2.4rem);line-height:1.08}
-.bsub{font-family:var(--f-brush);color:var(--sumi-2);margin:8px 0 14px;font-size:1.05rem}
+.bsub{font-family:var(--f-disp);font-style:italic;color:var(--sumi-2);margin:8px 0 14px;font-size:1.05rem}
 .bsummary{color:var(--sumi-2);max-width:62ch;margin-bottom:16px}
 .bmeta{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:var(--f-ui);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--sumi-soft);margin-bottom:20px}
 .bmeta .bage{color:var(--beni);font-weight:700}
@@ -108,7 +109,7 @@ section{position:relative}
 .buy-fmt{font-family:var(--f-ui);font-size:.6rem;letter-spacing:.1em;opacity:.7}
 .buy-price{font-family:var(--f-disp);font-weight:800;font-size:1.3rem;line-height:1.1;margin-top:2px}
 .buy-price s{opacity:.55;font-size:.75em;margin-right:4px}
-.buy-note{font-family:var(--f-brush);color:var(--sumi-soft);margin-top:12px;max-width:56ch}
+.buy-note{font-family:var(--f-disp);color:var(--sumi-soft);margin-top:12px;max-width:56ch}
 .b-look{margin-top:14px;background:none;border:0;border-bottom:2px solid var(--beni);font-family:var(--f-ui);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;padding:4px 0}
 .b-look:hover{color:var(--beni)}
 
@@ -120,7 +121,7 @@ section{position:relative}
 .ms .bar{display:block;height:14px;background:var(--sumi);margin:12px 0 8px;width:var(--w,80%);transition:background .4s}
 .ms .bar.b2{height:9px;width:var(--w2,55%);opacity:.5}
 .ms:hover .bar{background:var(--washi)}
-.ms p{font-family:var(--f-brush);font-size:.98rem;color:var(--sumi-soft);margin-top:10px;transition:color .4s}
+.ms p{font-family:var(--f-disp);font-style:italic;font-size:.98rem;color:var(--sumi-soft);margin-top:10px;transition:color .4s}
 .ms:hover p{color:var(--beni-2)}
 .ms .seal{position:absolute;top:16px;right:16px;--s:30px;font-size:.9rem}
 
@@ -139,7 +140,7 @@ section{position:relative}
 .contact-line{color:var(--sumi-2);max-width:48ch;margin:0 auto 28px}
 .mail{display:inline-block;white-space:nowrap;max-width:100%;font-family:var(--f-disp);font-weight:800;font-size:clamp(1.05rem,5.2vw,2.3rem);text-decoration:none;border-bottom:3px solid var(--beni);padding-bottom:4px;transition:color .3s}
 .mail:hover{color:var(--beni)}
-.currency{margin-top:26px;font-family:var(--f-brush);color:var(--sumi-soft)}
+.currency{margin-top:26px;font-family:var(--f-disp);color:var(--sumi-soft)}
 .currency b{color:var(--sumi);font-family:var(--f-disp)}
 
 /* ---------- LIGHTBOX ---------- */
@@ -168,6 +169,79 @@ section{position:relative}
   .fan{margin-top:-30px}
   .fb{width:19vw;margin-left:-3vw}
   .letter{padding:36px 26px 30px}
+}
+
+/* =====================================================================
+   MOBILE EDITION (≤640px) — the library, composed for the phone
+   ===================================================================== */
+@media(max-width:640px){
+  body{font-size:16px;line-height:1.6}
+  .wrap{padding:0 20px}
+  .band{padding:72px 0}
+  .h-sec{font-size:clamp(2.3rem,10.6vw,2.9rem);line-height:1.02;letter-spacing:-.02em}
+  .lede{font-size:1rem;max-width:none!important}
+  .sec-head{display:block;margin-bottom:34px}
+  .sec-no{gap:12px}
+  .sec-no .seal{--s:32px}
+  .sheet{border-width:2px;box-shadow:inset 0 0 0 4px var(--washi),inset 0 0 0 5px var(--sumi),0 18px 30px -22px rgba(60,40,15,.5)}
+  .sheet-in{inset:8px}
+  .btn{justify-content:center;padding:15px 10px;font-size:.66rem;letter-spacing:.12em;gap:8px}
+
+  /* hero */
+  #hero{min-height:auto;padding:86px 0 30px}
+  .hero-name{font-size:clamp(2.9rem,14.5vw,3.8rem);margin:14px 0 16px;letter-spacing:-.03em}
+  .hero-sub{font-size:1.02rem}
+  .hero-cta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:24px}
+  .hero-grid>div:last-child{margin:30px -8px 0}
+  .print-cart{top:14px;left:14px}
+  .print-cart .seal{--s:32px}
+  .fan{margin-top:-26px}
+  .fb{width:19vw;margin-left:-3vw;box-shadow:3px 4px 0 rgba(28,25,22,.18)}
+
+  /* book cards: cover + title side by side, the rest full width */
+  .grid{gap:40px}
+  .bcard,.bcard:nth-child(even){grid-template-columns:34% 1fr;justify-items:stretch;align-items:start;gap:0 16px;padding:16px 16px 20px;
+    border-width:2px;box-shadow:inset 0 0 0 4px var(--washi),inset 0 0 0 5px var(--sumi),0 20px 36px -28px rgba(60,40,15,.55)}
+  .binfo{display:contents}
+  .bcover,.bcard:nth-child(even) .bcover{order:0;grid-row:1 / span 3;width:100%;box-shadow:4px 5px 0 rgba(28,25,22,.18);align-self:start}
+  .bcover::after{opacity:1;content:'Look inside';padding:20px 0 8px;font-size:.52rem}
+  .btags,.btitle,.bsub{grid-column:2}
+  .btags{margin:2px 0 8px}
+  .btag{font-size:.52rem;padding:4px 7px;letter-spacing:.12em}
+  .btag:not(:first-child){display:none}
+  .btitle{font-size:1.32rem;line-height:1.12}
+  .bsub{font-size:.86rem;margin:6px 0 0;line-height:1.4}
+  .bsummary,.bmeta,.buyrow,.buy-note,.b-look{grid-column:1 / -1}
+  .bsummary{margin:18px 0 12px;font-size:.98rem}
+  .bmeta{font-size:.58rem;letter-spacing:.08em;margin-bottom:16px}
+  .buyrow{display:grid;grid-template-columns:1fr}
+  .buy{flex-direction:row;align-items:center;justify-content:space-between;padding:12px 16px}
+  .buy-fmt{display:none}
+  .buy-price{margin:0;font-size:1.25rem}
+  .buy-note{font-size:.88rem;margin-top:10px}
+  .b-look{justify-self:start}
+  .bno{top:-14px;right:14px}
+  .bno .seal{--s:36px;font-size:.9rem}
+  .drawer-row{gap:12px;margin-top:48px}
+  .ms{padding:18px}
+
+  /* story · author */
+  .letter-grid,.author-grid{gap:44px}
+  .letter{padding:32px 20px 26px}
+  .letter p{font-size:.98rem}
+  .sign{font-size:1.3rem}
+  .sign .seal{--s:44px}
+  .side-print{margin:0 -8px}
+  .side-cap{justify-content:flex-start;text-align:left;padding-left:8px;font-size:.86rem}
+  .author-pull{font-size:1.5rem}
+  .author-body p{font-size:1rem}
+
+  /* contact */
+  .avatar{width:120px}
+  .contact-line{font-size:1rem}
+  .currency{font-size:.95rem}
+  .foot{padding:56px 20px 44px}
+  .foot p{font-size:.72rem;letter-spacing:.08em}
 }
 </style>
 </head>
@@ -512,10 +586,11 @@ const avatar = document.getElementById('avatar');
 avatar.addEventListener('click', () => {
   const s = document.createElement('div');
   s.textContent = ['hi.','☺','read it!','ciao','★'][Math.floor(Math.random()*5)];
-  s.style.cssText = 'position:absolute;top:10%;left:50%;font-family:var(--f-brush);font-size:1.6rem;color:var(--beni);pointer-events:none';
+  s.style.cssText = 'position:absolute;top:10%;left:50%;font-family:var(--f-disp);font-weight:800;font-size:1.6rem;color:var(--beni);pointer-events:none';
   avatar.appendChild(s);
   s.animate([{transform:'translate(-50%,0) scale(.5)',opacity:0},{transform:'translate(-50%,-30px) scale(1.1)',opacity:1},{transform:'translate(-50%,-58px) scale(1)',opacity:0}],{duration:850,easing:'cubic-bezier(.2,.8,.3,1)'}).onfinish = () => s.remove();
 });
+
 U.observe();
 </script>
 </body>

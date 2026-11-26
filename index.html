@@ -6,6 +6,7 @@
 <title>dio.stesso — views</title>
 <meta name="description" content="Apps, songs, AI films and books by dio.stesso, printed here as woodblock views. Some blocks stay face-down.">
 <meta name="theme-color" content="#F2E8D5">
+<meta name="color-scheme" content="only light">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="dio.stesso">
 <meta property="og:title" content="dio.stesso — views">
@@ -112,7 +113,7 @@ section{position:relative}
 .ap-feats li{font-family:var(--f-ui);font-size:.74rem;letter-spacing:.06em;padding:6px 12px;border:1.5px solid var(--sumi);background:rgba(255,255,255,.25)}
 .ap-feats li.k{background:var(--sumi);color:var(--washi)}
 .ap-acts{display:flex;gap:10px;flex-wrap:wrap}
-.fresh-note{margin-top:46px;text-align:center;font-family:var(--f-brush);font-size:clamp(1.1rem,2vw,1.5rem);color:var(--sumi-2)}
+.fresh-note{margin-top:46px;text-align:center;font-family:var(--f-disp);font-style:normal;letter-spacing:.01em;font-size:clamp(1.1rem,2vw,1.5rem);color:var(--sumi-2)}
 
 /* ---------- FILMS ---------- */
 #films{background:var(--washi-2);background-image:var(--paper-tex);border-block:2px solid var(--sumi)}
@@ -309,7 +310,7 @@ section{position:relative}
 .fd-seal .seal{--s:40px;font-size:1.2rem;opacity:.85}
 .fd-peel{position:absolute;right:0;bottom:0;width:0;height:0;background:linear-gradient(135deg,transparent 50%,var(--washi) 50%,var(--washi-3));transition:width .5s var(--ease),height .5s var(--ease);box-shadow:-3px -3px 8px rgba(0,0,0,.35)}
 .fd:hover .fd-peel{width:46px;height:46px}
-.fd-whisper{position:absolute;left:24px;right:24px;bottom:84px;font-family:var(--f-brush);font-size:1.2rem;color:var(--washi);opacity:0;transform:translateY(8px);transition:opacity .5s,transform .5s var(--ease)}
+.fd-whisper{position:absolute;left:24px;right:24px;bottom:84px;font-family:var(--f-disp);font-weight:700;font-size:1.2rem;color:var(--washi);opacity:0;transform:translateY(8px);transition:opacity .5s,transform .5s var(--ease)}
 .fd:hover .fd-whisper,.fd.told .fd-whisper{opacity:.9;transform:none}
 .fd-n{position:absolute;top:24px;left:26px;font-family:var(--f-ui);font-size:.6rem;letter-spacing:.24em;color:rgba(242,232,213,.4)}
 .ura-foot{display:flex;justify-content:space-between;align-items:center;gap:30px;flex-wrap:wrap;border-top:1px solid rgba(242,232,213,.14);padding-top:34px}
@@ -415,6 +416,172 @@ section{position:relative}
   .links{grid-template-columns:1fr}
   .vw{flex-basis:56vw}
 }
+
+/* =====================================================================
+   MOBILE EDITION (≤640px) — composed for the phone, not shrunk from desktop
+   one gutter (20px) · one rhythm (72px) · left-aligned throughout ·
+   equal-width actions · swipe rows instead of cramped grids · light frames
+   ===================================================================== */
+@media(max-width:640px){
+  body{font-size:16px;line-height:1.6}
+  .wrap{padding:0 20px}
+  .band{padding:72px 0}
+  .h-sec{font-size:clamp(2.3rem,10.6vw,2.9rem);line-height:1.02;margin:14px 0 14px;letter-spacing:-.02em}
+  .lede{font-size:1rem;max-width:none}
+  .sec-head{display:block;margin-bottom:32px}
+  .sec-head .lede{max-width:none}
+  .sec-no{gap:12px}
+  .sec-no .seal{--s:32px}
+  #writing .sec-no,#contact .sec-no{justify-content:flex-start!important}
+  #writing,#contact{text-align:left}
+  #writing .lede,.contact-sub{margin:0 0 28px!important;max-width:none}
+
+  /* lighter frames — the double border no longer eats the picture */
+  .sheet{border-width:2px;box-shadow:inset 0 0 0 4px var(--washi),inset 0 0 0 5px var(--sumi),0 18px 30px -22px rgba(60,40,15,.5)}
+  .sheet-in{inset:8px}
+
+  /* actions: equal halves, centred labels */
+  .hero-cta,.ap-acts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .btn{justify-content:center;padding:15px 10px;font-size:.66rem;letter-spacing:.12em;gap:8px}
+  .songs-foot .btn,.ura-foot .btn{width:100%}
+
+  /* ---------- hero ---------- */
+  #hero{padding:84px 0 10px;min-height:auto}
+  .hero-name{font-size:clamp(3.7rem,19.5vw,5rem);margin:14px 0 16px;letter-spacing:-.04em}
+  .hero-tag{font-size:1.04rem;max-width:30ch}
+  .hero-cta{margin-top:24px}
+  .views{margin:36px -20px 0;padding:4px 20px 16px;gap:12px}
+  .vw{flex:0 0 44vw;padding:6px 6px 10px}
+  .vw-t{font-size:.98rem}
+  .vw-s{font-size:.58rem;letter-spacing:.1em}
+  .hero-art{margin:22px -8px 0}
+  .print-hint{position:static;margin-top:12px;padding-left:8px}
+
+  /* ---------- things shipped ---------- */
+  .ship-head{margin-bottom:28px}
+  .ship-title{font-size:clamp(3.8rem,19.5vw,5rem);margin-top:12px}
+  .ship-head .lede{margin-top:14px}
+  .shiplog{margin-bottom:64px;border-width:2px}
+  .sl{padding:16px 16px 14px}
+  .sl b{font-size:2.5rem}
+  .sub-head{gap:10px;margin-bottom:26px;padding-bottom:12px}
+  .sub-head .seal{--s:30px}
+  .sub-head h3{font-size:1.55rem}
+  .sub-note{width:100%;margin:0}
+  .fresh{gap:60px}
+  .ap-cart{top:-13px;left:14px}
+  .ap-cart .cart{display:none}
+  .ap-cart .seal{--s:32px;margin-top:0}
+  .ap-body{padding:22px 0 0}
+  .ap-name{font-size:2.2rem;margin:8px 0}
+  .ap-line{font-size:1rem}
+  .ap-feats{flex-wrap:nowrap;overflow-x:auto;margin:0 -20px 22px;padding:2px 20px;scrollbar-width:none}
+  .ap-feats::-webkit-scrollbar{display:none}
+  .ap-feats li{white-space:nowrap;font-size:.7rem}
+  .fresh-note{text-align:left;font-size:1.1rem;margin-top:44px}
+  .snd,.expand{bottom:14px;padding:7px 10px;font-size:.56rem;letter-spacing:.14em}
+  .snd{right:14px}.expand{left:14px}
+
+  .wfilters{width:calc(100% + 40px);flex-wrap:nowrap;overflow-x:auto;margin:6px -20px 0;padding:0 20px 2px;scrollbar-width:none}
+  .wfilters::-webkit-scrollbar{display:none}
+  .wf{white-space:nowrap;padding:9px 13px;font-size:.64rem}
+
+  /* every app = one tidy row: picture left, words right */
+  .works{grid-template-columns:1fr;gap:12px}
+  .work,.work.wide{grid-column:auto;display:grid;grid-template-columns:40% 1fr;align-items:center;gap:14px;padding:8px;border-width:2px;
+    box-shadow:inset 0 0 0 3px var(--washi),inset 0 0 0 4px var(--sumi)}
+  .work:hover{transform:none;box-shadow:inset 0 0 0 3px var(--washi),inset 0 0 0 4px var(--sumi)}
+  .w-media,.work.wide .w-media{aspect-ratio:1/1;min-height:0;flex:none}
+  .w-no{top:6px;left:6px}
+  .w-no .seal{--s:24px;font-size:.6rem}
+  .w-play{width:30px;height:30px;right:6px;bottom:6px;font-size:.62rem}
+  .w-body{padding:0 6px 0 0}
+  .w-cat{font-size:.56rem;letter-spacing:.12em}
+  .w-name,.work.wide .w-name{font-size:1.22rem;margin:3px 0 4px}
+  .w-line{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:.84rem;line-height:1.42}
+  .w-acts{margin-top:9px;gap:6px}
+  .w-acts .ghost{display:none}
+  .w-btn{padding:7px 9px;font-size:.56rem;letter-spacing:.12em}
+
+  /* ---------- films ---------- */
+  .films{gap:48px}
+  .film-cap{gap:12px;margin-top:16px}
+  .film-cap .seal{--s:30px}
+  .film-cap h3{font-size:1.25rem}
+  .film-cap .deva{font-size:1.2rem}
+  .film-cap p{font-size:.95rem}
+  .stats{margin-top:40px;border-width:2px}
+  .stat{padding:14px}
+
+  /* ---------- songs: a crate you flick through ---------- */
+  .moon{top:28px;right:-30px;width:92px;opacity:.5}
+  .moods{margin-top:22px}
+  .mood{flex:1;padding:10px 6px;font-size:.64rem}
+  .crate{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:16px;margin:0 -20px;padding:4px 20px 6px;scrollbar-width:none}
+  .crate::-webkit-scrollbar{display:none}
+  .rec{flex:0 0 72vw;scroll-snap-align:start}
+  .fresh>*,.films>*,.two>*{min-width:0}
+  .crate,.views,.wfilters,.ap-feats{scroll-padding-inline:20px}
+  .rec.dim{display:none}
+  .rec-meta{flex-direction:column-reverse;gap:2px;margin-top:12px}
+  .rec-t{font-size:1.1rem}
+  .swipe{display:flex}
+  .songs-foot{margin-top:34px}
+
+  /* ---------- about · principles · obsessions ---------- */
+  .two{gap:44px}
+  .pull{font-size:1.5rem;margin:12px 0 20px}
+  .body-p{font-size:1rem}
+  .slip{display:flex;font-size:1rem;padding:14px 16px;gap:12px}
+  .side-print{margin:0 -8px}
+  .side-cap{justify-content:flex-start;text-align:left;padding-left:8px;font-size:.86rem}
+  .quote{padding:64px 20px}
+  .quote .q{font-size:clamp(1.75rem,8.2vw,2.3rem)}
+  .obs{grid-template-columns:1fr;border-width:2px}
+  .ob{display:flex;align-items:center;gap:18px;padding:15px 18px;border-left:0;border-top:1.5px solid var(--sumi-faint)}
+  .ob:first-child{border-top:0}
+  .ob-k{font-size:1.7rem;width:34px;text-align:center}
+  .ob-n{order:3;margin:0 0 0 auto}
+  .ob-t{margin:0;font-size:1.15rem}
+  .prin li{font-size:1.16rem;gap:14px;padding:14px 0}
+  .note{font-size:.98rem}
+  .wander{font-size:17.5vw}
+  .ap-feats,.wfilters{-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent)}
+  .tags{gap:8px;margin:24px 0}
+  .tag{font-size:.68rem;padding:8px 12px}
+
+  /* ---------- library ---------- */
+  .shelf{margin:34px 0 36px;justify-content:flex-start}
+  .shelf .bk{width:20vw;margin-left:-3vw}
+  .pub{display:flex;align-items:flex-start;gap:14px;padding:16px 16px 18px}
+  .pub .seal{--s:38px;font-size:.95rem}
+
+  /* ---------- the reverse side ---------- */
+  .ura-big{font-size:62vw;top:24px;right:-10vw}
+  .ura-lede{font-size:1.02rem}
+  .facedown{gap:12px;margin:44px 0 40px}
+  .fd,.fd:nth-child(3n+2){aspect-ratio:3/4;margin-top:0}
+  .fd:nth-child(even){translate:0 18px}
+  .fd-whisper{font-size:1rem;left:16px;right:16px;bottom:64px}
+  .fd-seal{left:16px;bottom:16px}
+  .fd-seal .seal{--s:32px}
+  .fd-cart{top:18px;right:18px}
+  .fd-n{top:16px;left:16px}
+  .ura-foot{display:block;padding-top:28px}
+  .ura-foot p{margin-bottom:20px;font-size:1.45rem}
+
+  /* ---------- contact ---------- */
+  .links{grid-template-columns:1fr;gap:10px}
+  .lk:first-child{grid-column:auto}
+  .lk{padding:16px 18px}
+  .foot{padding:56px 20px 44px}
+  .foot p{font-size:.72rem;letter-spacing:.08em}
+}
+.swipe{display:none;align-items:center;gap:10px;margin-top:14px;font-family:var(--f-ui);font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(242,232,213,.5)}
+.swipe i{flex:0 0 40px;height:1.5px;background:currentColor;position:relative;overflow:hidden}
+.swipe i::after{content:'';position:absolute;inset:0;background:var(--beni-2);animation:swipeline 2.4s ease-in-out infinite}
+@keyframes swipeline{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.work:hover .w-media img,.vw:hover .vw-img img{animation:none}
 </style>
 </head>
 <body>
@@ -625,6 +792,7 @@ section{position:relative}
       </div>
     </div>
     <div class="crate" id="crate"></div>
+    <div class="swipe" aria-hidden="true">swipe the crate <i></i></div>
     <div class="songs-foot rv"><a class="btn ghost-light" href="https://www.instagram.com/wisebakasur/" target="_blank" rel="noopener">Listen on Instagram <span class="ar">↗</span></a></div>
   </div>
 </section>
@@ -1063,6 +1231,7 @@ FACEDOWN.forEach((f,i) => {
 /* tally — only what's printed here */
 document.getElementById('tally').textContent = APPS.length + SONGS.length + 2 + 5;
 
+U.tint('.vw:not(.dark) .vw-img img, .w-media img');
 U.observe();
 </script>
 </body>
